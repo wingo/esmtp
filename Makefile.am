@@ -1,3 +1,4 @@
+AM_CFLAGS= -DSYSCONFDIR=\"@sysconfdir@\"
 bin_PROGRAMS = esmtp
 
 dist_man_MANS = esmtp.1 esmtprc.5
