@@ -13,6 +13,6 @@ as well.
 
 For debugging purposes you may prefer to put in your ~/.muttrc
 
-	set sendmail="/path/to/esmtp -X /tmp/esmtp.log"
+	set sendmail="/path/to/esmtp -v -X /tmp/esmtp.log"
 
 instead.

@@ -1,9 +1,15 @@
+Version 0.4
+
+	* Debian packaging.
+
+
 Version 0.3
 
 	* Capability to generate log files.
 	* Better verbose output.
 	* Minor bug fixes and documentation enhancements.
 	* Multiple identities.
+
 
 Version 0.2:
 

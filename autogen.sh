@@ -1,9 +1,7 @@
 #! /bin/sh
 
-export  WANT_AUTOMAKE_1_6=1
-
-aclocal \
-&& automake --gnu --add-missing \
+aclocal-1.6 \
+&& automake-1.6 --gnu --add-missing \
 && autoconf \
 && ./configure --enable-maintainer-mode
 

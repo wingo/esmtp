@@ -30,7 +30,7 @@ password = "PASSWORD"
 
 # Use the Starttls
 #
-starttls = disabled
+#starttls = disabled
 #
 # It can be one of "enabled", "disabled" or "required". It defaults to
 # disabled.
@@ -40,10 +40,15 @@ starttls = disabled
 #certificate_passphrase = "CERTIFICATE_PASSPHRASE"
 
 
-# A different identity which can be selected with the '-f' flag. You can have
-# as many you like.
+# Same as above but for a different identity which can be selected with the
+# '-f' flag. You can have as many you like.
 #
 identity myself@somewhere.com
 	hostname smtp.somewhere.com:25
 	username "myself"
 	password "secret"
+	#starttls = disabled
+#
+# NOTE: the default indentity settings aren't shared by the other identities.
+# Everything (username, password, etc.) must be specified for every identity
+# even if they don't differ from the default identity.
