@@ -19,13 +19,16 @@
 #include <stdlib.h>
 
 
-#ifndef TRUE
-#define TRUE 1
-#define FALSE 0
-#endif
-
 #define HEADER_END(p)	((p)[0] == '\n' && ((p)[1] != ' ' && (p)[1] != '\t'))
 
+
+#define START_HDR	0	/**< before header colon */
+#define SKIP_JUNK	1	/**< skip whitespace, \n, and junk */
+#define BARE_ADDRESS	2	/**< collecting address without delimiters */
+#define INSIDE_DQUOTE	3	/**< inside double quotes */
+#define INSIDE_PARENS	4	/**< inside parentheses */
+#define INSIDE_BRACKETS	5	/**< inside bracketed address */
+#define ENDIT_ALL	6	/**< after last address */
 
 /**
  * Parse addresses in succession out of a specified RFC822 header.
@@ -39,14 +42,6 @@ char *next_address(const char *hdr)
     static const unsigned char *hp;
     static int	state, oldstate;
     int parendepth = 0;
-
-#define START_HDR	0	/* before header colon */
-#define SKIP_JUNK	1	/* skip whitespace, \n, and junk */
-#define BARE_ADDRESS	2	/* collecting address without delimiters */
-#define INSIDE_DQUOTE	3	/* inside double quotes */
-#define INSIDE_PARENS	4	/* inside parentheses */
-#define INSIDE_BRACKETS	5	/* inside bracketed address */
-#define ENDIT_ALL	6	/* after last address */
 
 #define NEXTTP()	((tp < sizeof(address)-1) ? tp++ : tp)
 

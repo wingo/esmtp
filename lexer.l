@@ -1,22 +1,22 @@
 %{
-/*
- * lexer.l -- lexer for the rcfile
+/**
+ * \file lexer.l
+ * Lexer for the rcfile.
+ *
+ * \author Adapted from fetchmail's rcfile_l.l by José Fonseca
  */
 
-/*
- * Adapted from fetchmail's rcfile_l.l by José Fonseca
- */
- 
+
 #include <stdio.h>
 #include <string.h>
 
 #include "parser.h"
+#include "xmalloc.h"
 
-#define MSGBUFSIZE 8192
 
 int lineno = 1;
 
-void escapes(const char *tp, char *cp);
+void escapes(const char *tp, char *cp, size_t n);
 
 %}
 
@@ -25,29 +25,29 @@ void escapes(const char *tp, char *cp);
 %%
 
 \"[^\"]*\"	{
-			char buf[MSGBUFSIZE];
+			char buf[BUFSIZ];
 
 			yytext[strlen(yytext)-1] = '\0';
-			escapes(yytext+1, buf);
-			yylval.sval = (char *) strdup(buf);
+			escapes(yytext+1, buf, BUFSIZ);
+			yylval.sval = xstrdup(buf);
                         BEGIN(0);
 			return STRING;
 		}
 \'[^\']*\'	{
-			char buf[MSGBUFSIZE];
+			char buf[BUFSIZ];
 
 			yytext[strlen(yytext)-1] = '\0';
-			escapes(yytext+1, buf);
-			yylval.sval = (char *) strdup(buf);
+			escapes(yytext+1, buf, BUFSIZ);
+			yylval.sval = xstrdup(buf);
                         BEGIN(0);
 			return STRING;
 		}
 
 <NAME>[^=;, \t\r\n]+	{
-			char buf[MSGBUFSIZE];
+			char buf[BUFSIZ];
 
-			escapes(yytext, buf);
-			yylval.sval = (char *) strdup(buf);
+			escapes(yytext, buf, BUFSIZ);
+			yylval.sval = xstrdup(buf);
                         BEGIN(0);
 			return STRING;
 		}
@@ -73,10 +73,10 @@ required	{ return REQUIRED; }
 -?[0-9]+/[^a-zA-Z]	{ yylval.number = atoi(yytext); return NUMBER; }
 
 [^=;:, \t\r\n]+	{
-			char buf[MSGBUFSIZE];
+			char buf[BUFSIZ];
 
-			escapes(yytext, buf);
-			yylval.sval = (char *) strdup(buf);
+			escapes(yytext, buf, BUFSIZ);
+			yylval.sval = xstrdup(buf);
 			return STRING;
 		}
 
@@ -87,10 +87,11 @@ required	{ return REQUIRED; }
 /* process standard C-style escape sequences in a string */
 void escapes(
     const char *cp,	/* source string with escapes */
-    char *tp		/* target buffer for digested string */
+    char *tp,		/* target buffer for digested string */
+    size_t n
 )
 {
-    while (*cp)
+    while (*cp && --n)
     {
 	int	cval = 0;
 
@@ -126,6 +127,7 @@ void escapes(
 	else
 	    cval = *cp++;
 	*tp++ = cval;
+	
     }
     *tp = '\0';
 }

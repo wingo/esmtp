@@ -45,7 +45,7 @@ void identity_add(identity_t *identity);
 identity_t *identity_lookup(const char *address);
 
 /** Initialize the identities resources */
-int identities_init(void);
+void identities_init(void);
 
 /** Cleanup the resources associated with the identities */
 void identities_cleanup(void);
@@ -54,6 +54,6 @@ void identities_cleanup(void);
 
 
 /** Send a message via a SMTP server */
-int smtp_send(message_t *msg);
+void smtp_send(message_t *msg);
 
 #endif

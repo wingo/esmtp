@@ -20,6 +20,7 @@
 #include "smtp.h"
 #include "local.h"
 #include "main.h"
+#include "xmalloc.h"
 
 
 /**
@@ -35,8 +36,7 @@ identity_t *identity_new(void)
 {
 	identity_t *identity;
 
-	if(!(identity = (identity_t *)malloc(sizeof(identity_t))))
-		return NULL;
+	identity = (identity_t *)xmalloc(sizeof(identity_t));
 
 	memset(identity, 0, sizeof(identity_t));
 
@@ -89,12 +89,9 @@ identity_t *identity_lookup(const char *address)
 	return default_identity;
 }
 	
-int identities_init(void)
+void identities_init(void)
 {
-	if(!(default_identity = identity_new()))
-		return 0;
-
-	return 1;
+	default_identity = identity_new();
 }
 
 void identities_cleanup(void)
@@ -306,7 +303,7 @@ void print_recipient_status (smtp_recipient_t recipient, const char *mailbox,
 	fprintf (stderr, "%s: %d %s\n", mailbox, status->code, status->text);
 }
 
-int smtp_send(message_t *msg)
+void smtp_send(message_t *msg)
 {
 	smtp_session_t session;
 	smtp_message_t message;
@@ -403,7 +400,7 @@ int smtp_send(message_t *msg)
 		char buf[128];
 
 		fprintf (stderr, "SMTP server problem %s\n",
-				 smtp_strerror (smtp_errno (), buf, sizeof buf));
+				 smtp_strerror (smtp_errno (), buf, sizeof(buf)));
 
 		ret = EX_UNAVAILABLE;
 	}
@@ -431,7 +428,8 @@ int smtp_send(message_t *msg)
 	auth_destroy_context (authctx);
 	auth_client_exit ();
 
-	return ret;
+	if (ret != EX_OK)
+		exit(ret);
 }
 
 /*@}*/

@@ -14,14 +14,14 @@
 #include "message.h"
 #include "local.h"
 #include "rfc822.h"
+#include "xmalloc.h"
 
 
 message_t *message_new(void)
 {
 	message_t *message;
 
-	if(!(message = (message_t *)malloc(sizeof(message_t))))
-		return NULL;
+	message = (message_t *)xmalloc(sizeof(message_t));
 
 	memset(message, 0, sizeof(message_t));
 
@@ -71,39 +71,29 @@ void message_free(message_t *message)
 	free(message);
 }
 	
-int message_set_reverse_path(message_t *message, const char *address)
+void message_set_reverse_path(message_t *message, const char *address)
 {
 	if(message->reverse_path)
 		free(message->reverse_path);
 
-	if(!(message->reverse_path = strdup(address)))
-		return 0;
-
-	return 1;
+	message->reverse_path = xstrdup(address);
 }
 
-int message_add_recipient(message_t *message, const char *address)
+void message_add_recipient(message_t *message, const char *address)
 {
 	recipient_t *recipient;
 
-	if(!(recipient = (recipient_t *)malloc(sizeof(recipient_t))))
-		return 0;
+	recipient = (recipient_t *)xmalloc(sizeof(recipient_t));
 
-	if(!(recipient->address = strdup(address)))
-	{
-		free(recipient);
-		return 0;
-	}
+	recipient->address = xstrdup(address);
 
 	if(local_address(address))
 		list_add(&recipient->list, &message->local_recipients);
 	else
 		list_add(&recipient->list, &message->remote_recipients);
-
-	return 1;
 }
 
-static int message_buffer_alloc(message_t *message)
+static void message_buffer_alloc(message_t *message)
 {
 	char *buffer;
 	size_t buffer_size;
@@ -113,13 +103,10 @@ static int message_buffer_alloc(message_t *message)
 	else
 		buffer_size = message->buffer_size << 1;
 	
-	if(!(buffer = (char *)realloc(message->buffer, buffer_size)))
-		return 0;
+	buffer = (char *)xrealloc(message->buffer, buffer_size);
 
 	message->buffer = buffer;
 	message->buffer_size = buffer_size;
-
-	return 1;
 }
 
 static char *message_buffer_readline(message_t *message)
@@ -129,8 +116,8 @@ static char *message_buffer_readline(message_t *message)
 	
 	while(1)
 	{
-		if(message->buffer_stop >= message->buffer_size - 1 && !message_buffer_alloc(message))
-			return NULL;
+		if(message->buffer_stop >= message->buffer_size - 1)
+			message_buffer_alloc(message);
 
 		if(!fgets(message->buffer + message->buffer_stop, message->buffer_size - message->buffer_stop, fp))
 			return NULL;
@@ -218,8 +205,8 @@ size_t message_read(message_t *message, char *ptr, size_t size)
 {
 	size_t count = 0, n;
 
-	if(!message->buffer && !message_buffer_alloc(message))
-		return 0;
+	if(!message->buffer)
+		message_buffer_alloc(message);
 
 	n = message_buffer_flush(message, ptr, size);
 	count += n;
@@ -259,8 +246,9 @@ int message_eof(message_t *message)
 	return feof(fp);
 }
 
-static int message_parse_header(message_t *message, size_t start, size_t stop)
+static unsigned message_parse_header(message_t *message, size_t start, size_t stop)
 {
+	unsigned count = 0;
 	const char *address;
 	char *header, *next, c;
 	
@@ -273,8 +261,10 @@ static int message_parse_header(message_t *message, size_t start, size_t stop)
 	if(!strncasecmp("From: ", header, 6))
 	{
 		if((address = next_address(header)))
-			if(!message_set_reverse_path(message, address))
-				return 0;
+		{
+			message_set_reverse_path(message, address);
+			count++;
+		}
 	}
 	else if(!strncasecmp("To: ", header, 4) || 
 			!strncasecmp("Cc: ", header, 4) || 
@@ -283,8 +273,8 @@ static int message_parse_header(message_t *message, size_t start, size_t stop)
 		address = next_address(header);
 		while(address)
 		{
-			if(!message_add_recipient(message, address))
-				return 0;
+			message_add_recipient(message, address);
+			count++;
 			address = next_address(NULL);
 		}
 
@@ -301,19 +291,19 @@ static int message_parse_header(message_t *message, size_t start, size_t stop)
 		message->buffer_stop = start + n;
 	}
 
-	return 1;
+	return count;
 }
 
-int message_parse_headers(message_t *message)
+unsigned message_parse_headers(message_t *message)
 {
 	FILE *fp = message->fp ? message->fp : stdin;
 	char *line, *header;
 	size_t start, stop;
+	unsigned count = 0;
 
 	assert(!message->buffer);
 
-	if(!message_buffer_alloc(message))
-		return 0;
+	message_buffer_alloc(message);
 
 	start = 0;
 	while((line = message_buffer_readline(message)))
@@ -325,62 +315,16 @@ int message_parse_headers(message_t *message)
 		else
 		{
 			stop = line - message->buffer;
-			if(stop && !message_parse_header(message, start, stop))
-				return 0;
+			if(stop)
+				count += message_parse_header(message, start, stop);
 
 			start = stop;
 
 			if(line[0] == '\n')
-				return 1;
+				return count;
 		}
 	}
 	
-	return 0;
+	fprintf(stderr, "Failed to parse headers\n");
+	exit(EX_DATAERR);
 }
-
-#ifdef TEST
-int local_address(const char *address)
-{
-	return !strchr(address, '@');
-}
-
-int main(int argc, char *argv[])
-{
-	message_t *message = message_new();
-	const size_t len = 8192;
-	size_t n;
-	char buf[len];
-	unsigned i;
-	FILE *fpin, *fpout;
-	struct list_head *ptr;
-	int ret;
-
-	fpin = fopen("test.in", "r");
-	fpout = fopen("test.out", "w");
-	message->fp = fpin;
-	ret = message_parse_headers(message);
-	do {
-		n = message_read(message, buf, len);
-		fwrite(buf, 1, n, fpout);
-	} while(n == len);
-	
-	printf("%d %s\n", ret, message->reverse_path);
-	list_for_each(ptr, &message->local_recipients)
-	{
-		recipient_t *recipient = list_entry(ptr, recipient_t, list);
-		
-		if(recipient->address)
-			printf("%s\n",recipient->address);
-	}
-	list_for_each(ptr, &message->remote_recipients)
-	{
-		recipient_t *recipient = list_entry(ptr, recipient_t, list);
-		
-		if(recipient->address)
-			printf("%s\n",recipient->address);
-	}
-	
-	message_free(message);
-}
-
-#endif

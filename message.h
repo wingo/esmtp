@@ -49,11 +49,11 @@ message_t *message_new(void);
 /** Free the resources associated with a message. */
 void message_free(message_t *m);
 
-int message_set_reverse_path(message_t *message, const char *address);
+void message_set_reverse_path(message_t *message, const char *address);
 
-int message_add_recipient(message_t *message, const char *address);
+void message_add_recipient(message_t *message, const char *address);
 
-int message_parse_headers(message_t *message);
+unsigned message_parse_headers(message_t *message);
 
 size_t message_read(message_t *message, char *ptr, size_t size);
 

@@ -23,7 +23,6 @@ FILE *log_fp = NULL;
 int main (int argc, char **argv)
 {
 	int c;
-	int ret;
 	enum notify_flags notify = Notify_NOTSET;
 	char *from = NULL;
 	message_t *message;
@@ -298,73 +297,54 @@ int main (int argc, char **argv)
 		exit (EX_USAGE);
 	}
 
-	if(!(message = message_new()))
-		goto error;
+	message = message_new();
 
 	/** Parse the envelope headers */
 	if(parse_headers)
-	{
 		if(!message_parse_headers(message))
-		{
-			fprintf(stderr, "Failed to parse headers\n");
-			exit(EX_DATAERR);
-		}
-		
-		if(!remote && !local)
 		{
 			fprintf(stderr, "No recipients found\n");
 			exit(EX_DATAERR);
 		}
-	}
 
 	/* Set the reverse path for the mail envelope.  */
-	if(from && !message_set_reverse_path (message, from))
-		goto error;
+	if(from)
+		message_set_reverse_path (message, from);
 
 	/* Add remaining program arguments as message recipients. */
-	while (optind < argc) {
-		if(!message_add_recipient(message, argv[optind++]))
-			goto error;
-	}
+	while (optind < argc)
+		message_add_recipient(message, argv[optind++]);
 
 	local = !list_empty(&message->local_recipients);
 	remote = !list_empty(&message->remote_recipients);
 	
 	if(remote && !local)
-		ret = smtp_send(message);
+		smtp_send(message);
 	else if(!remote && local)
 	{
-		if(!local_init(message))
-			goto error;
-
-		if(!local_flush(message))
-			goto error;
-			
+		local_init(message);
+		local_flush(message);
 		local_cleanup();
-
-		ret = 0;
 	}
 	else
 	{
-		if(!local_init(message))
-			goto error;
+		local_init(message);
 
-		ret = smtp_send(message);
+		smtp_send(message);
 
 		if(ferror(mda_fp))
-			goto error;
+		{
+			perror(NULL);
+			exit(EX_OSERR);
+		}
 
-		if(!message_eof(message) && !local_flush(message))
-			goto error;
+		if(!message_eof(message))
+			local_flush(message);
 			
 		local_cleanup();
 	}
 	
 	message_free(message);
 
-	return ret;
-
-error:
-	perror(NULL);
-	exit(255);
+	exit(EX_OK);
 }

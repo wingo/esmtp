@@ -12,6 +12,7 @@
 
 #include "local.h"
 #include "main.h"
+#include "xmalloc.h"
 
 
 #if 0
@@ -37,29 +38,24 @@ static void sanitize(char *s)
 			*cp = '_';
 }
 
-#define xmalloc malloc
-#define xstrdup strdup
-
-#define HAVE_SETEUID
 
 /**
  * Pipe the message to the MDA for local delivery.
  *
  * Based on fetchmail's open_mda_sink().
  */
-int local_init(message_t *message)
+void local_init(message_t *message)
 {
-#ifdef HAVE_SETEUID
-	uid_t orig_uid, uid;
-	struct passwd *pw;
-#endif /* HAVE_SETEUID */
 	struct		idlist *idp;
 	int		length = 0, fromlen = 0, nameslen = 0;
 	char		*names = NULL, *before, *after, *from = NULL;
 	char *user = NULL;
 
 	if (!mda)
-			return 1;
+	{
+		fprintf(stderr, "local delivery not possible without a MDA");
+		exit(EX_OSFILE);
+	}
 
 	length = strlen(mda);
 	before = xstrdup(mda);
@@ -172,46 +168,20 @@ int local_init(message_t *message)
 		before = after;
 	}
 
-#ifdef HAVE_SETEUID
-	/*
-	 * Arrange to run with user's permissions if we're root.
-	 * This will initialize the ownership of any files the
-	 * MDA creates properly.  (The seteuid call is available
-	 * under all BSDs and Linux)
-	 */
-	orig_uid = getuid();
-	/* if `user' doesn't name a real local user, try to run as root */
-	if ((pw = getpwnam(user)) == (struct passwd *)NULL)
-		uid = 0;
-	else
-		uid = pw->pw_uid;	/* for local delivery via MDA */
-	seteuid(uid);
-#endif /* HAVE_SETEUID */
 
-	mda_fp = popen(before, "w");
-
-#ifdef HAVE_SETEUID
-	/* this will fail quietly if we didn't start as root */
-	seteuid(orig_uid);
-#endif /* HAVE_SETEUID */
-
-	if (!mda_fp)
+	if(!(mda_fp = popen(before, "w")))
 	{
-	free(before);
-	before = NULL;
 		fprintf(stderr, "MDA open failed\n");
-		return 0;
+		exit(EX_OSERR);
 	}
-
+		
 	if(verbose)
 		fprintf(stdout, "Connected to MDA: %s\n", before);
 
 	free(before);
-	before = NULL;
-	return 1;
 }
 
-int local_flush(message_t *message)
+void local_flush(message_t *message)
 {
 	char buffer[BUFSIZ];
 	size_t n;
@@ -219,10 +189,11 @@ int local_flush(message_t *message)
 	do {
 		n = message_read(message, buffer, BUFSIZ);
 		if(fwrite(buffer, 1, n, mda_fp) != n)
-			return 0;
+		{
+			perror(NULL);
+			exit(EX_OSERR);
+		}
 	} while(n == BUFSIZ);
-	
-	return 1;
 }
 
 void local_cleanup(void)

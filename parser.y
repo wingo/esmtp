@@ -17,6 +17,7 @@
 #include "main.h"
 #include "smtp.h"
 #include "local.h"
+#include "xmalloc.h"
 
 
 /* parser reads these */
@@ -69,7 +70,7 @@ identity	: IDENTITY map STRING
 			{
 				identity = identity_new();
 				identity_add(identity);
-				identity->address = strdup($3);
+				identity->address = xstrdup($3);
 			}
 		;
 
@@ -78,14 +79,14 @@ statement_list	: statement
 		;
 
 /* future global options should also have the form SET <name> optmap <value> */
-statement	: HOSTNAME map STRING	{ identity->host = strdup($3); }
-		| USERNAME map STRING	{ identity->user = strdup($3); }
-		| PASSWORD map STRING	{ identity->pass = strdup($3); }
+statement	: HOSTNAME map STRING	{ identity->host = xstrdup($3); }
+		| USERNAME map STRING	{ identity->user = xstrdup($3); }
+		| PASSWORD map STRING	{ identity->pass = xstrdup($3); }
 		| STARTTLS map DISABLED	{ identity->starttls = Starttls_DISABLED; }
 		| STARTTLS map ENABLED	{ identity->starttls = Starttls_ENABLED; }
 		| STARTTLS map REQUIRED	{ identity->starttls = Starttls_REQUIRED; }
-		| CERTIFICATE_PASSPHRASE map STRING { identity->certificate_passphrase = strdup($3); }
-		| MDA map STRING	{ mda = strdup($3); }
+		| CERTIFICATE_PASSPHRASE map STRING { identity->certificate_passphrase = xstrdup($3); }
+		| MDA map STRING	{ mda = xstrdup($3); }
 		;
 
 %%

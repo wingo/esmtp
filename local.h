@@ -19,9 +19,9 @@ extern FILE *mda_fp;
 int local_address(const char *address);
 
 /** Send a message locally (via a MDA) */
-int local_init(message_t *msg);
+void local_init(message_t *msg);
 
-int local_flush(message_t *msg);
+void local_flush(message_t *msg);
 
 void local_cleanup(void);
 
