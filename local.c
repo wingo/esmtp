@@ -59,6 +59,7 @@ void local_init(message_t *message)
 	if (strstr(before, "%T"))
 	{
 		struct list_head *ptr;
+		char *p;
 
 		/*
 		 * We go through this in order to be able to handle very
@@ -71,21 +72,26 @@ void local_init(message_t *message)
 			
 			assert(recipient->address);
 			
-			nameslen += (strlen(recipient->address) + 1);	/* string + ' ' */
+			nameslen += (strlen(recipient->address) + 3);	/* string + quotes + ' ' */
 		}
 
 		names = (char *)xmalloc(nameslen + 1);		/* account for '\0' */
-		names[0] = '\0';
+		p = names;
 		list_for_each(ptr, &message->local_recipients)
 		{
 			recipient_t *recipient = list_entry(ptr, recipient_t, list);
+			int written;
 			
-			strcat(names, recipient->address);
-			strcat(names, " ");
+			sanitize(recipient->address);
+			written = sprintf(p, "'%s' ", recipient->address);
+			if (written < 0)
+			{
+				perror(NULL);
+				exit(EX_OSERR);
+			}
+			p += written;
 		}
 		names[--nameslen] = '\0';		/* chop trailing space */
-
-		sanitize(names);
 	}
 
 	/* get From address for %F */
@@ -129,10 +135,8 @@ void local_init(message_t *message)
 			/* need to expand? BTW, no here overflow, because in
 			** the worst case (end of string) sp[1] == '\0' */
 			if (sp[1] == 'T') {
-				*dp++ = '\'';
 				strcpy(dp, names);
 				dp += nameslen;
-				*dp++ = '\'';
 				sp++;		/* position sp over [sT] */
 				dp--;		/* adjust dp */
 			} else if (sp[1] == 'F') {

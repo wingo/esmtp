@@ -16,6 +16,9 @@ News
     by adding a qualifying domain name. Allow forcing envelope-from and Sender
     headers. Drop possible admin-added sgid priveleges to be dropped after
     reading the config. (Bernhard Link)
+
+    * Do not pass multiple address to the MDA quoted as a single argument
+    (Kusanagi Kouichi).
   
 
   * Version 0.5.0 (2003-11-14):
