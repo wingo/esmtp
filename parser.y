@@ -19,6 +19,8 @@
 #include "local.h"
 #include "xmalloc.h"
 
+extern int yylex (void);
+
 
 /** Path name of dot file */
 static const char *rcfile = NULL;		
@@ -101,7 +103,7 @@ statement	: HOSTNAME map STRING	{ identity->host = xstrdup($3); SET_DEFAULT_IDEN
 		| STARTTLS map REQUIRED	{ identity->starttls = Starttls_REQUIRED; SET_DEFAULT_IDENTITY; }
 		| CERTIFICATE_PASSPHRASE map STRING { identity->certificate_passphrase = xstrdup($3); SET_DEFAULT_IDENTITY; }
 		| PRECONNECT map STRING	{ identity->preconnect = xstrdup($3); SET_DEFAULT_IDENTITY; }
-		| PRECONNECT map STRING	{ identity->postconnect = xstrdup($3); SET_DEFAULT_IDENTITY; }
+		| POSTCONNECT map STRING { identity->postconnect = xstrdup($3); SET_DEFAULT_IDENTITY; }
 		| MDA map STRING	{ mda = xstrdup($3); }
 		| DEFAULT		{ default_identity = identity; }
 		;
@@ -129,15 +131,15 @@ void yyerror (const char *s)
 
 void rcfile_parse(const char *_rcfile)
 {
-	char *temp = NULL;
+	char *dot_rcfile = NULL;
 
 	if(_rcfile)
 	{
 		/* Configuration file specified on the command line */
-		if(!(yyin = fopen(_rcfile, "r")))
+		rcfile = _rcfile;
+		if(!(yyin = fopen(rcfile, "r")))
 			goto failure;
 			
-		rcfile = _rcfile;
 		goto success;
 	}
 	
@@ -149,14 +151,15 @@ void rcfile_parse(const char *_rcfile)
 		if (!(home = getenv("HOME")))
 			break;
 			
-		temp = xmalloc(strlen(home) + strlen(DOT_RCFILE) + 2);
+		dot_rcfile = xmalloc(strlen(home) + strlen(DOT_RCFILE) + 2);
 
-		strcpy(temp, home);
-		if (temp[strlen(temp) - 1] != '/')
-			strcat(temp, "/");
-		strcat(temp, DOT_RCFILE);
+		strcpy(dot_rcfile, home);
+		if (dot_rcfile[strlen(dot_rcfile) - 1] != '/')
+			strcat(dot_rcfile, "/");
+		strcat(dot_rcfile, DOT_RCFILE);
 
-		if(!(yyin = fopen(temp, "r")))
+		rcfile = dot_rcfile;
+		if(!(yyin = fopen(rcfile, "r")))
 		{
 			if(errno == ENOENT)
 				break;
@@ -164,14 +167,15 @@ void rcfile_parse(const char *_rcfile)
 				goto failure;
 		}
 		
-		rcfile = temp;
 		goto success;
 	} 
 	while(0);
 	
 	/* Search for the global configuration file */
-	do {
-		if(!(yyin = fopen(ETC_RCFILE, "r")))
+	do
+	{
+		rcfile = ETC_RCFILE;
+		if(!(yyin = fopen(rcfile, "r")))
 		{
 			if(errno == ENOENT)
 				break;
@@ -179,13 +183,13 @@ void rcfile_parse(const char *_rcfile)
 				goto failure;
 		}
 
-		rcfile = ETC_RCFILE;
 		goto success;
 	}
 	while(0);
 		
 	/* No configuration file found */
-	return;
+	fprintf(stderr, "No configuration file found at %s or " ETC_RCFILE "\n", dot_rcfile);
+	exit(EX_CONFIG);
 
 success:
 	/* Configuration file opened */
@@ -200,8 +204,8 @@ success:
 	fclose(yyin);	/* not checking this should be safe, file mode was r */
 
 	rcfile = NULL;
-	if(temp)
-		free(temp);
+	if(dot_rcfile)
+		free(dot_rcfile);
 
 	return;
 

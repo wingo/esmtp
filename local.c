@@ -43,7 +43,6 @@ static void sanitize(char *s)
  */
 void local_init(message_t *message)
 {
-	struct		idlist *idp;
 	int		length = 0, fromlen = 0, nameslen = 0;
 	char		*names = NULL, *before, *after, *from = NULL;
 
