@@ -131,7 +131,6 @@ void identities_cleanup(void)
 static const char * message_cb (void **buf, int *len, void *arg)
 {
 	message_t *message = (message_t *)arg;
-	int octets;
 
 	if (len == NULL)
 	{
@@ -154,10 +153,6 @@ static const char * message_cb (void **buf, int *len, void *arg)
 static void event_cb (smtp_session_t session, int event_no, void *arg, ...)
 {
 	va_list ap;
-	const char *mailbox;
-	smtp_message_t message;
-	smtp_recipient_t recipient;
-	const smtp_status_t *status;
 
 	va_start (ap, arg);
 		
@@ -165,12 +160,56 @@ static void event_cb (smtp_session_t session, int event_no, void *arg, ...)
 		case SMTP_EV_EXTNA_DSN:
 			fprintf(stderr, "Delivery Status Notification extension not supported by MTA\n");
 			break;
+
 		case SMTP_EV_EXTNA_8BITMIME:
 			fprintf(stderr, "8bit-MIME extension not supported by MTA\n");
 			break;
+			
 		case SMTP_EV_EXTNA_STARTTLS:
 			fprintf(stderr, "StartTLS extension not supported by MTA\n");
 			break;
+
+		case SMTP_EV_WEAK_CIPHER:
+		{
+			int bits = va_arg (ap, int);
+			int *ok = va_arg (ap, int *);
+
+			fprintf(stderr, "Weak cipher (%d bits)\n", bits);
+
+			*ok = 0;
+			break;
+		}
+
+		case SMTP_EV_INVALID_PEER_CERTIFICATE:
+		{
+			long result = va_arg (ap, long);
+			int *ok = va_arg (ap, int *);
+
+			fprintf(stderr, "Invalid peer certificate (error %ld)\n", result);
+
+			*ok = 0;
+			break;
+		}
+
+		case SMTP_EV_NO_PEER_CERTIFICATE:
+		{
+			int *ok = va_arg (ap, int *);
+			
+			fprintf(stderr, "No peer certificate\n");
+
+			*ok = 0;
+			break;
+		}
+
+		case SMTP_EV_WRONG_PEER_CERTIFICATE:
+		{
+			int *ok = va_arg (ap, int *);
+
+			fprintf(stderr, "Wrong peer certificate\n");
+
+			*ok = 0;
+			break;
+		}
 	}
 	
 	if (verbose)
@@ -189,21 +228,28 @@ static void event_cb (smtp_session_t session, int event_no, void *arg, ...)
 				break;
 				
 			case SMTP_EV_MAILSTATUS:
-				mailbox = va_arg (ap, const char *);
-				message = va_arg (ap, smtp_message_t);
-				status = smtp_reverse_path_status (message);
+			{
+				const char *mailbox = va_arg (ap, const char *);
+				smtp_message_t message = message = va_arg (ap, smtp_message_t);
+				const smtp_status_t *status = smtp_reverse_path_status (message);
+				
 				fprintf (stdout, "From %s: %d %s", mailbox, status->code, status->text);
 				break;
+			}
 
 			case SMTP_EV_RCPTSTATUS:
-				mailbox = va_arg (ap, const char *);
-				recipient = va_arg (ap, smtp_recipient_t);
-				status = smtp_recipient_status (recipient);
+			{
+				const char *mailbox = va_arg (ap, const char *);
+				smtp_recipient_t recipient = va_arg (ap, smtp_recipient_t);
+				const smtp_status_t *status = smtp_recipient_status (recipient);
+				
 				fprintf (stdout, "To %s: %d %s", mailbox, status->code, status->text);
 				break;
+			}
 				
 			case SMTP_EV_MESSAGEDATA:
-				message = va_arg (ap, smtp_message_t);
+			{
+				smtp_message_t message = message = va_arg (ap, smtp_message_t);
 				if (!sizeticking)
 				{
 					fputs("Message data: ", stdout);
@@ -217,16 +263,34 @@ static void event_cb (smtp_session_t session, int event_no, void *arg, ...)
 					sizeticker -= SIZETICKER;
 				}
 				break;
+			}
 
 			case SMTP_EV_MESSAGESENT:
-				message = va_arg (ap, smtp_message_t);
-				status = smtp_message_transfer_status (message);
+			{
+				smtp_message_t message = va_arg (ap, smtp_message_t);
+				const smtp_status_t *status = smtp_message_transfer_status (message);
+				
 				fprintf (stdout, "Message sent: %d %s", status->code, status->text);
 				break;
+			}
 				
 			case SMTP_EV_DISCONNECT:
 				fputs("Disconnected to MTA\n", stdout);
 				break;
+
+			case SMTP_EV_STARTTLS_OK:
+			{
+				void *ssl = va_arg(ap, void *);
+				void *cipher = va_arg(ap, void *);
+				int bits = va_arg(ap, int);
+				
+				(void) ssl;
+				(void) cipher;
+
+				fprintf(stdout, "StartTLS OK (%d bits)\n", bits);
+				break;
+			}
+
 		}
 	}
 		

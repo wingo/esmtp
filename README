@@ -157,3 +157,49 @@ defaults
   redundant step by simply replacing the value inside the quotes above by
   whichever value you use on your <<<~/.esmtprc>>>.
 
+
+Using the StartTLS extension
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  TLS support in <<libESMTP>> although usable is not yet as robust and
+  featureful as the rest of the library. At the moment to use the StarTLS
+  extension you will need to:
+  
+    [[1]] create a ~/.authenticate directory for the certificates. All files
+    and directories in ~/.authenticate (including itself) must be user-readable
+    only , i.e., they must have 0600 and 0700 permissions respectively.
+
+    [[2]] put the certificate of the trusted Cert-Authority that signed the
+    server certificate into <<<~/.authenticate/ca.pem>>>. 
+
+    [[3]] if a client certificate is required by the server then put it
+    (including the private key) into
+    <<<~/.authenticate/private/smtp-starttls.pem>>> or
+    <<<~/.authenticate/host.name/private/smtp-starttls.pem>>>. If your client
+    certificate has a passphrase then it should be specificied with the
+    <certificate_passphrase> configuration.
+
+    [[4]] enable (or require) the StartTLS extension with the <starttls>
+    configuration option. Note that the value of the <hostname> configuration
+    option of the server you connect MUST match the name in the server
+    certificate, since it will be used to verify the server identity.
+
+  In case of failure no error message will appear. Instead, <<libESMTP>> will
+  terminate the SMTP connection right after issuing the STARTLS command.
+  
+  For more information about TLS support in <<libEMSTP>> see (here in
+  cronological order, and roughly in reverse-order of importance):
+
+    * {{http://mail.gnome.org/archives/balsa-list/2002-February/thread.html#00225}}
+    
+    * {{http://mail.gnome.org/archives/balsa-list/2002-March/thread.html#00000}}
+    
+    * {{http://mail.gnome.org/archives/balsa-list/2003-September/thread.html#00011}}
+    
+    * {{http://mail.gnome.org/archives/balsa-list/2003-September/msg00023.html}}
+
+    * comments in smtp-tls.c in the <<libESMTP>> source distribution.
+  
+  Also of interest may be:
+  
+    * {{http://postfix.state-of-mind.de/patrick.koetter/smtpauth/postfix_tls_support.html}}

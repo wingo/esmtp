@@ -3,5 +3,5 @@
 aclocal \
 && automake --gnu --add-missing \
 && autoconf \
-&& ./configure --enable-maintainer-mode
+&& CFLAGS="-Wall -pedantic -g" ./configure --enable-maintainer-mode
 

@@ -151,7 +151,6 @@ static char *message_buffer_readline(message_t *message)
 static void message_buffer_fill(message_t *message)
 {
 	FILE *fp = message->fp ? message->fp : stdin;
-	size_t n;
 
 	message->buffer_stop += fread(message->buffer + message->buffer_stop, 1, message->buffer_size - message->buffer_stop, fp);
 	
