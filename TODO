@@ -10,8 +10,4 @@ To do
 
     * Include simple scripts to queue emails for dial-up connections.
 
-    * In order to facilitate translation, it would be a good idea to run
-    debconf-gettextize (from the po-debconf package). See the documentation
-    that comes with po-debconf. Don't forget to update Build-depends.
-
 
