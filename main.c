@@ -380,8 +380,6 @@ int main (int argc, char **argv)
 			++optarg;
 
 		    default:
-			fprintf (stderr, "Invalid -q value\n");
-			exit (64);
 			break;
 		}
 		break;
