@@ -29,6 +29,8 @@ extern char *certificate_passphrase;
 /* using Bison, this arranges that yydebug messages will show actual tokens */
 extern char * yytext;
 #define YYPRINT(fp, type, val)	fprintf(fp, " = \"%s\"", yytext)
+
+void yyerror (const char *s);
 %}
 
 %union {

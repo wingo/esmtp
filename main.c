@@ -285,7 +285,7 @@ main (int argc, char **argv)
 	      /* Run as a daemon in foreground */
 	    case 'h':
 	      /* Print the persistent host status database */
-	    case 'h':
+	    case 'H':
 	      /* Purge expired entries from the persistent host status database */
 	    case 'p':
 	      /* Print a listing of the queue(s) */
