@@ -1,11 +1,11 @@
 %{
-/*
- * parser.y -- parser for the rcfile
+/**
+ * \file parser.y
+ * Parser for the rcfile.
+ *
+ * \author Adapted from fetchmail's rcfile_y.y by José Fonseca
  */
 
-/*
- * Adapted from fetchmail's rcfile_y.y by José Fonseca
- */
 
 #include <errno.h>
 #include <stdio.h>
@@ -14,7 +14,10 @@
 
 #include <libesmtp.h>
 
-#include "esmtp.h"
+#include "main.h"
+#include "smtp.h"
+#include "local.h"
+
 
 /* parser reads these */
 char *rcfile = NULL;		/* path name of dot file */
@@ -22,7 +25,7 @@ char *rcfile = NULL;		/* path name of dot file */
 /* parser sets these */
 int yydebug;			/* in case we didn't generate with -- debug */
 
-static identity_t *identity = &default_identity;
+static identity_t *identity = NULL;
 
 /* using Bison, this arranges that yydebug messages will show actual tokens */
 extern char * yytext;
@@ -36,7 +39,7 @@ void yyerror (const char *s);
     char *sval;
 }
 
-%token IDENTITY HOSTNAME USERNAME PASSWORD STARTTLS CERTIFICATE_PASSPHRASE 
+%token IDENTITY HOSTNAME USERNAME PASSWORD STARTTLS CERTIFICATE_PASSPHRASE MDA
 
 %token MAP
 
@@ -64,17 +67,9 @@ map		: /* empty */
 
 identity	: IDENTITY map STRING
 			{
-				identity_list_t *item;
-				
-				item = malloc(sizeof(identity_list_t));
-				memset(item, 0, sizeof(identity_list_t));
-			
-				*identities_tail = item;
-				identities_tail = &item->next;
-				identity = &item->identity;
-				
-				identity->identity = strdup($3);
-				identity->starttls = Starttls_DISABLED;
+				identity = identity_new();
+				identity_add(identity);
+				identity->address = strdup($3);
 			}
 		;
 
@@ -90,6 +85,7 @@ statement	: HOSTNAME map STRING	{ identity->host = strdup($3); }
 		| STARTTLS map ENABLED	{ identity->starttls = Starttls_ENABLED; }
 		| STARTTLS map REQUIRED	{ identity->starttls = Starttls_REQUIRED; }
 		| CERTIFICATE_PASSPHRASE map STRING { identity->certificate_passphrase = strdup($3); }
+		| MDA map STRING	{ mda = strdup($3); }
 		;
 
 %%
@@ -102,8 +98,9 @@ extern FILE *yyin;
 void yyerror (const char *s)
 /* report a syntax error */
 {
-    fprintf(stderr, "%s:%d: %s at %s\n", rcfile, lineno, s, 
-		   (yytext && yytext[0]) ? yytext : "end of input");
+	fprintf(stderr, "%s:%d: %s at %s\n", rcfile, lineno, s, 
+		(yytext && yytext[0]) ? yytext : "end of input");
+	exit(EX_CONFIG);
 }
 
 #define RCFILE ".esmtprc"
@@ -126,7 +123,9 @@ void parse_rcfile (void)
 	  strcat(rcfile, "/");
 	strcat(rcfile, RCFILE);
     }
-  
+ 
+    identity = default_identity;
+
     /* Open the configuration file and feed it to the lexer. */
     if (!(yyin = fopen(rcfile, "r")))
     {
