@@ -8,7 +8,9 @@ News
 
     * Do not attempt to authenticate if no username/password is given.
 
-    * Several configuration enhancements (SASAJIMA, Dirk Tilger).
+    * Several configuration fixes/enhancements (SASAJIMA and Dirk Tilger).
+
+    * Enforce strict permissions on configuration file (Tiago Macambira).
   
 
   * Version 0.5.0 (2003-11-14):

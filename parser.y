@@ -7,10 +7,18 @@
  */
 
 
+#include "config.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 
 #include <libesmtp.h>
 
@@ -125,6 +133,73 @@ void yyerror (const char *s)
 	exit(EX_CONFIG);
 }
 
+/**
+ * Check that a configuration file is secure.
+ * 
+ * \param securecheck if set to 1 strict file permission tests will be run.
+ * 
+ * \return 0 if everything is OK, -1 in case of error 
+ * 
+ */
+int rcfile_check(const char *pathname, const int securecheck)
+{
+#ifndef __EMX__
+	struct stat statbuf;
+
+	errno = 0;
+
+	/* special case useful for debugging purposes */
+	if (strcmp("/dev/null", pathname) == 0)
+		return 0;
+
+	/* pass through the special name for stdin */
+	if (strcmp("-", pathname) == 0)
+		return 0;
+
+	/* the run control file must have the same uid as the REAL uid of this 
+	 * process, it must have permissions no greater than 600, and it must
+	 * not be a symbolic link.  We check these conditions here. 
+	 */
+	if (lstat(pathname, &statbuf) < 0) {
+		if (errno == ENOENT) 
+			return 0;
+		else {
+			fprintf(stderr, "lstat: %s: %s\n", pathname, strerror(errno));
+			return -1;
+		}
+	}
+
+	if (!securecheck)
+		return 0;
+
+	if (!S_ISREG(statbuf.st_mode))
+	{
+		fprintf(stderr, "File %s must be a regular file.\n", pathname);
+		return -1;
+	}
+
+#ifndef __BEOS__
+	if (statbuf.st_mode & (S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH | S_IXOTH))
+	{
+		fprintf(stderr, "File %s must have no more than -rwx--x--- (0710) permissions.\n", pathname);
+		return -1;
+	}
+#endif /* !__BEOS__ */
+
+#ifdef HAVE_GETEUID
+	if (statbuf.st_uid != geteuid())
+#else
+	if (statbuf.st_uid != getuid())
+#endif /* HAVE_GETEUID */
+	{
+		fprintf(stderr, "File %s must be owned by you.\n", pathname);
+		return -1;
+	}
+#endif
+	return 0;
+}
+
+
 #define RCFILE "esmtprc"
 #define DOT_RCFILE "." RCFILE
 #define ETC_RCFILE SYSCONFDIR "/" RCFILE
@@ -157,8 +232,11 @@ void rcfile_parse(const char *_rcfile)
 		if (dot_rcfile[strlen(dot_rcfile) - 1] != '/')
 			strcat(dot_rcfile, "/");
 		strcat(dot_rcfile, DOT_RCFILE);
-
 		rcfile = dot_rcfile;
+
+ 		if (rcfile_check(rcfile, 1) < 0)
+ 			goto failure;
+ 
 		if(!(yyin = fopen(rcfile, "r")))
 		{
 			if(errno == ENOENT)

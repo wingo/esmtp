@@ -44,5 +44,7 @@ AC_SUBST( sysconfdir )
 
 jrf_FUNC_GETOPT
 
+AC_CHECK_FUNCS([getuid geteuid])
+		
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
