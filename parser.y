@@ -34,8 +34,8 @@ void yyerror (const char *s);
 %}
 
 %union {
-  int number;
-  char *sval;
+    int number;
+    char *sval;
 }
 
 %token HOSTNAME USERNAME PASSWORD STARTTLS CERTIFICATE_PASSPHRASE 
@@ -99,8 +99,10 @@ void parse_rcfile (void)
     strcat(rcfile, RCFILE);
   
     /* Open the configuration file and feed it to the lexer. */
-    if (!(yyin = fopen(rcfile, "r"))) {
-    	if (errno != ENOENT) {
+    if (!(yyin = fopen(rcfile, "r")))
+    {
+    	if (errno != ENOENT)
+	{
 	    fprintf(stderr, "open: %s: %s\n", rcfile, strerror(errno));
 	}
     }

@@ -2,8 +2,8 @@ To use ESMTP with mutt add the following line
 
 	set sendmail="/path/to/esmtp"
 
-to your ~/.muttrc and create a ~/.esmtprc (see the included sample.esmtprc 
-for an example.)
+to your ~/.muttrc and create a ~/.esmtprc (see the included sample.esmtprc for
+an example.)
 
 ESMTP supports SENDMAIL envelope sender '-f' flag, so don't forget to add
 
@@ -11,7 +11,8 @@ ESMTP supports SENDMAIL envelope sender '-f' flag, so don't forget to add
 
 as well.
 
-For debugging purposes you may prefer using the follwing shell script which logs ESMTP to 
+For debugging purposes you may prefer using the follwing shell script which
+logs ESMTP to 
 
 	#!/bin/sh
 	LOGFILE=/tmp/esmtp.log

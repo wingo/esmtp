@@ -82,10 +82,11 @@ required	{ return REQUIRED; }
 
 %%
 
-void escapes(cp, tp)
 /* process standard C-style escape sequences in a string */
-const char	*cp;	/* source string with escapes */
-char		*tp;	/* target buffer for digested string */
+void escapes(
+    const char *cp,	/* source string with escapes */
+    char *tp		/* target buffer for digested string */
+)
 {
     while (*cp)
     {
@@ -111,12 +112,12 @@ char		*tp;	/* target buffer for digested string */
 	{
 	    switch (*++cp)
 	    {
-	    case '\\': cval = '\\'; break;
-	    case 'n': cval = '\n'; break;
-	    case 't': cval = '\t'; break;
-	    case 'b': cval = '\b'; break;
-	    case 'r': cval = '\r'; break;
-	    default: cval = *cp;
+		case '\\': cval = '\\'; break;
+		case 'n': cval = '\n'; break;
+		case 't': cval = '\t'; break;
+		case 'b': cval = '\b'; break;
+		case 'r': cval = '\r'; break;
+		default: cval = *cp;
 	    }
 	    cp++;
 	}
