@@ -1,0 +1,109 @@
+.TH ESMTPRC 5
+
+.SH NAME
+esmtprc
+\-
+\fBesmtp\fR configuration file.
+
+.SH DESCRIPTION
+A \fBesmtp\fR configuration file consists of several options.  The options
+format is:
+
+.nf
+    \fIkeyword\fR=\fIvalue\fR
+.fi
+
+The equal sign is optional and can be replaced by whitespace.  The \fIvalue\fR
+may be enclosed in simple or double quotes, in which case special characters
+can be escaped as in normal C strings.
+
+Comments are delimited by the '#' character upto the newline character.
+
+.SH OPTIONS
+.TP
+\fBhostname\fR
+Set SMTP host and service (port).
+
+The format is:
+
+.nf
+    host.example.org[:\fIservice\fR]
+.fi
+
+With no whitespace surrounding the colon if service is specified. \fIservice\fR
+may be a name from /etc/services or a decimal port number.  If not specified
+the port defaults to 587.
+
+Note (from \fBlibESMTP\fR documentation): the default port number is set to
+587 since this is the port that should be used for mail submission, see RFC
+2476.  By choosing this default now, the API does not change behavior
+unexpectedly in the future as use of the new standard becomes commonplace.
+The hostport notation simplifies things for the application, the user can
+type "localhost:smtp" or "localhost:25" where the application
+expects a host name.
+
+.TP
+\fBusername\fR
+Set the username for authentication with the SMTP server.
+
+Do NOT set the username and password on the system configuration file unless
+you are the only user of this machine.  \fBEsmtp\fR is not run with suid
+privileges therefore the system configuration file must be readable by
+everyone.  If your SMTP server reuquires authentication and you are not the
+only user then specify your personal SMTP account details in the user
+configuration file.
+
+.TP
+\fBpassword\fR
+Set the password for authentication with the SMTP server.
+
+.TP
+\fBstarttls\fR
+Whether to use the StartTLS extension.
+
+It can be one of \fBenabled\fR, \fBdisabled\fR or \fBrequired\fR. It defaults to
+\fBdisabled\fR.
+
+.TP
+\fBcertificate_passphrase\fR
+Set the certificate passphrase for the StartTLS extension.
+
+.TP
+\fBidentity\fR
+Define an identity.
+
+An identity is a set of options associated with a given address.  For example:
+
+.nf
+    identity = myself@somewhere.com
+        hostname = smtp.somewhere.com:25
+        username = "myself"
+        password = "secret"
+.fi
+
+Identities are be selected by the address specified in the \fB\-f\fR flag.  You
+can have as many you like.
+
+The options up to the first \fBidentity\fR option constitute the default
+identity.
+
+Note that the default identity settings are not shared by the other identities.
+Everything (username, password, etc.) must be specified for every identity even
+if they don't differ from the default identity.
+
+.TP
+\fBmda\fR
+Set the Mail Delivery Agent (MDA).
+
+The local delivery addresses will be inserted into the MDA command wherever you
+place a %T. The mail message's \fBFrom\fR address will be inserted where you
+place an %F.
+
+Some common MDAs are "/usr/bin/procmail -d %T",
+"/usr/bin/deliver" and "/usr/lib/mail.local %T".
+
+.SH SEE ALSO
+esmtp(1)
+
+.SH AUTHOR
+José Fonseca

@@ -240,11 +240,13 @@ addresses.
 .SH FILES
 .TP
  ~/.esmtprc
-user configuration file
+User configuration file. Only read if no configuration file is specified on the
+command line.
 
 .TP
 /etc/esmtprc
-system configuration file
+System configuration file. Only read if no configuration file is specified on
+the command line and there is no user configuration file.
 
 .SH SEE ALSO
 esmtprc(5),
