@@ -1,9 +1,9 @@
-To use esmtp with mutt add
+To use ESMTP with mutt add the following line
 
 	set sendmail="/path/to/esmtp"
 
-to your ~/.muttrc and create a ~/.esmtp (see sample.esmtp for an example.)
-
+to your ~/.muttrc and create a ~/.esmtprc (see the included sample.esmtprc 
+for an example.)
 
 For debugging purposes you may prefer using the follwing shell script. 
 
@@ -17,11 +17,8 @@ For debugging purposes you may prefer using the follwing shell script.
 
 	exit $?
 
-Save it as esmtp.sh and put in you ~/.muttrc
+Save it as esmtp.sh and put in your ~/.muttrc
 
 	set sendmail="/path/to/esmtp.sh"
 
 instead.
-
-
-TODO: This would be better handled if done by esmtp itself and controllable by a configuration setting.

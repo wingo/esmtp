@@ -1,2 +1,3 @@
 - handle the '-t' option
-- better handling of other sendmail options
+- implement the '-X' option to log the traffic to a file
+- in general better handling of most sendmail options
