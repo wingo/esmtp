@@ -197,4 +197,7 @@ void local_cleanup(void)
 		if(verbose)
 			fprintf(stdout, "Disconnected to MDA\n");
 	}
+
+	if(mda)
+		free(mda);
 }

@@ -43,15 +43,15 @@ static void message_send(message_t *message)
 	{
 		local_init(message);
 		local_flush(message);
-		local_cleanup();
 	}
 	else
 	{
 		local_init(message);
 		smtp_send(message);
 		local_flush(message);
-		local_cleanup();
 	}
+	
+	local_cleanup();
 }
 
 int main (int argc, char **argv)
@@ -350,6 +350,9 @@ int main (int argc, char **argv)
 	identities_cleanup();
 
 done:
+	if(log_fp)
+		fclose(log_fp);
+	
 	message_free(message);
 
 	exit(EX_OK);
