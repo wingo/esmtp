@@ -38,6 +38,11 @@ typedef struct {
 	enum starttls_option starttls;
 	char *certificate_passphrase;
 	/*@}*/
+
+	/** \name Pre-connect Command */
+	/*@{*/
+	char *preconnect;
+	/*@}*/
 } identity_t;
 
 /** 

@@ -69,6 +69,16 @@ It can be one of \fBenabled\fR, \fBdisabled\fR or \fBrequired\fR. It defaults to
 Set the certificate passphrase for the StartTLS extension.
 
 .TP
+\fBpreconnect\fR
+Shell command to execute prior to opening an SMTP connection.
+
+This may be useful in conjunction with application-level transports (e.g.
+\fBssh\fR with its port-forwarding functionality) to secure the SMTP
+connection. \fBEsmtp\fR will wait for the command to exit before
+proceeding. If the command returns a non-zero status, delivery will be
+aborted.
+
+.TP
 \fBidentity\fR
 Define an identity.
 

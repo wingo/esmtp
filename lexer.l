@@ -60,6 +60,7 @@ user(name)?	{ BEGIN(NAME); return USERNAME; }
 pass(word)?	{ BEGIN(NAME); return PASSWORD; }
 (start)?tls	{ return STARTTLS; }
 (certificate_)?passphrase	{ return CERTIFICATE_PASSPHRASE; }
+preconnect	{ return PRECONNECT; }
 mda		{ return MDA; }
 
 =		{ return MAP; }

@@ -13,6 +13,7 @@
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
+#include <sys/wait.h>
 
 #include <auth-client.h>
 #include <libesmtp.h>
@@ -427,6 +428,43 @@ void smtp_send(message_t *msg)
 		if (msg->notify != Notify_NOTSET)
 			if(!smtp_dsn_set_notify (recipient, msg->notify))
 				goto failure;
+	}
+
+	/* Execute pre-connect command if one was specified. */
+	if (identity->preconnect)
+	{
+		int ret, exit_status;
+
+		if (verbose)
+			fprintf (stdout, "Executing pre-connect command: %s\n", identity->preconnect);
+
+		ret = system (identity->preconnect);
+		exit_status = WEXITSTATUS(ret);
+
+		/* Check whether the child process caught a signal meant for us */
+		if (WIFSIGNALED(ret))
+		{
+			int sig = WTERMSIG(ret);
+
+			if (sig == SIGINT || sig == SIGQUIT)
+			{
+				fprintf (stderr, "Pre-connect command received signal %d\n", sig);
+				exit (EX_SOFTWARE);
+			}
+		}
+
+		if (ret == -1)
+		{
+			fputs ("Error executing pre-connect command\n", stderr);
+			exit (EX_OSERR);
+		}
+
+		if (exit_status != 0)
+		{
+			fprintf (stderr, "Pre-connect command \"%s\" exited with non-zero status %d\n",
+				 identity->preconnect, exit_status);
+			exit (EX_SOFTWARE);
+		}
 	}
 
 	/* Initiate a connection to the SMTP server and transfer the message. */

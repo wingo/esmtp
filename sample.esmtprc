@@ -24,6 +24,10 @@ password = "PASSWORD"
 #
 #certificate_passphrase = "CERTIFICATE_PASSPHRASE"
 
+# Command to run before contacting the SMTP server
+#
+#preconnect = "ssh -f -L 2025:mail.isp.com:25 user@shell.isp.com 'sleep 5'"
+
 
 # Same as above but for a different identity which can be selected with the
 # '-f' flag. You can have as many you like.
