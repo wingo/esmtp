@@ -1,8 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(Makefile.am)
-AM_INIT_AUTOMAKE(esmtp, 0.2)
-
+AC_PREREQ(2.53)
+AC_INIT(esmtp, 0.2)
+AC_CONFIG_SRCDIR(Makefile.am)
+AM_INIT_AUTOMAKE(1.6 dist-bzip2)
 AM_MAINTAINER_MODE
 
 AC_PROG_CC
@@ -26,4 +27,5 @@ AC_CHECK_LIB(esmtp, smtp_start_session,
     AC_MSG_ERROR([*** libESMTP library not found.]),
     -lpthread)
 
-AC_OUTPUT([Makefile])
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
