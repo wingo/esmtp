@@ -5,6 +5,10 @@ News
 
     * A 'postconnect' keyword to execute a command after closing a SMTP
     connection.
+
+    * Do not attempt to authenticate if no username/password is given.
+
+    * Several configuration enhancements (SASAJIMA, Dirk Tilger).
   
 
   * Version 0.5.0 (2003-11-14):

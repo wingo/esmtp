@@ -42,7 +42,7 @@ fi
 
 AC_SUBST( sysconfdir )
 
-adl_FUNC_GETOPT_LONG
+jrf_FUNC_GETOPT
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

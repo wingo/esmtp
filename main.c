@@ -4,10 +4,14 @@
  */
 
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
 
 #include "main.h"
 #include "message.h"
