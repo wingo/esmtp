@@ -44,6 +44,16 @@ typedef struct {
 	char *preconnect;
 	char *postconnect;
 	/*@}*/
+
+	char *qualifydomain;	/**< domain to qualify unqualified addresses with */
+
+	char *helo;	/**< hostname to tell with helo */
+
+	/** \name Forcing options */
+	/*@{*/
+	char *force_reverse_path;
+	char *force_sender;
+	/*@}*/
 } identity_t;
 
 /** 
@@ -70,6 +80,6 @@ void identities_cleanup(void);
 
 
 /** Send a message via a SMTP server */
-void smtp_send(message_t *msg);
+void smtp_send(message_t *msg, identity_t *identity);
 
 #endif

@@ -14,6 +14,9 @@
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <unistd.h>
 
 #include <auth-client.h>
 #include <libesmtp.h>
@@ -67,6 +70,18 @@ void identity_free(identity_t *identity)
 
 	if(identity->postconnect)
 		free(identity->postconnect);
+
+	if(identity->qualifydomain)
+		free(identity->qualifydomain);
+
+	if(identity->helo)
+		free(identity->helo);
+
+	if(identity->force_reverse_path)
+		free(identity->force_reverse_path);
+
+	if(identity->force_sender)
+		free(identity->force_sender);
 
 	free(identity);
 }
@@ -380,7 +395,78 @@ void print_recipient_status (smtp_recipient_t recipient, const char *mailbox,
 	fprintf (stderr, "%s: %d %s\n", mailbox, status->code, status->text);
 }
 
-void smtp_send(message_t *msg)
+/**
+ * Escape a forced fields: %u by username %% by %
+ */
+
+static char *escape_forced_address (char *mask)
+{
+	uid_t uid;
+	char *escaped, *e;
+	const char *p;
+	int len;
+	struct passwd *user;
+
+	uid = getuid();
+	user = getpwuid(uid);
+
+	len = 0;
+	for (p=mask ; *p ; p++)
+	{
+		if ( *p == '%' )
+		{
+			p++;
+			if( !*p )
+				break;
+			switch( *p ) {
+				case '%':
+					len++;
+					break;
+				case 'u':
+					if (user)
+					{
+						len += strlen(user->pw_name);
+					}
+					else
+					{
+						fprintf (stderr, "Could not determine the username of uid %d!\n",(int)uid);
+						exit (EX_NOUSERNAME);
+					}
+					break;
+			}
+		}
+		else
+			len++;
+	}
+
+	e = escaped = xmalloc(len+1);
+	for (p=mask ; *p ; p++)
+	{
+		if (*p == '%')
+		{
+			p++;
+			if (!*p)
+				break;
+			if (*p == '%')
+				*(e++) = *p;
+			else if (*p == 'u')
+			{
+				strcpy(e,user->pw_name);
+				e += strlen(user->pw_name);
+			}
+		}
+		else
+		{
+			*(e++) = *p;
+			continue;
+		}
+	}
+	*e = '\0';
+	return escaped;
+	
+}
+
+void smtp_send(message_t *msg, identity_t *identity)
 {
 	smtp_session_t session;
 	smtp_message_t message;
@@ -388,9 +474,8 @@ void smtp_send(message_t *msg)
 	auth_context_t authctx;
 	const smtp_status_t *status;
 	struct sigaction sa;
-	identity_t *identity;
 	struct list_head *ptr;
-	
+
 	/* This program sends only one message at a time.  Create an SMTP
 	 * session.
 	 */
@@ -402,10 +487,6 @@ void smtp_send(message_t *msg)
 	if(log_fp)
 		if(!smtp_set_monitorcb (session, monitor_cb, NULL, 1))
 			goto failure;
-
-	/* Lookup the identity */
-	identity = identity_lookup(msg->reverse_path); 
-	assert(identity);
 
 	/* Set the event callback. */
 	if(!smtp_set_eventcb (session, event_cb, NULL))
@@ -419,6 +500,13 @@ void smtp_send(message_t *msg)
 	 */
 	sa.sa_handler = SIG_IGN; sigemptyset (&sa.sa_mask); sa.sa_flags = 0;
 	sigaction (SIGPIPE, &sa, NULL);
+
+	/* Set the hostname of this computer to be used for HELO names: */
+	if(identity->helo)
+	{
+		if(!smtp_set_hostname (session, identity->helo))
+			goto failure;
+	}
 
 	/* Set the host running the SMTP server.  LibESMTP has a default port
 	 * number of 587, however this is not widely deployed so the port is
@@ -463,7 +551,26 @@ void smtp_send(message_t *msg)
 		goto failure;
 
 	/* Set the reverse path for the mail envelope.  (NULL is ok) */
-	if(msg->reverse_path)
+	if(identity->force_reverse_path)
+	{
+		char *value;
+
+		value = escape_forced_address(identity->force_reverse_path);
+		if(!smtp_set_reverse_path (message, value))
+		{
+			free(value);
+			goto failure;
+		}
+		free(value);
+		/* Allow -f to set an default From: address though */
+		if(msg->reverse_path)
+		{
+			if(!smtp_set_header (message, "From", NULL, msg->reverse_path))
+				goto failure;
+
+		}
+	}
+	else if(msg->reverse_path)
 	{
 		if(!smtp_set_reverse_path (message, msg->reverse_path))
 			goto failure;
@@ -478,6 +585,22 @@ void smtp_send(message_t *msg)
 	if(!smtp_set_messagecb (message, message_cb, msg))
 		goto failure;
 
+	/* Overwrite Sender:-Header if force sender is specified */
+	if(identity->force_sender)
+	{
+		char *value;
+
+		value = escape_forced_address(identity->force_sender);
+		if(!smtp_set_header (message, "Sender", NULL, value))
+		{
+			free(value);
+			goto failure;
+		}
+		free(value);
+		if(!smtp_set_header_option (message, "Sender", Hdr_OVERRIDE, (int)1))
+			goto failure;
+	}
+
 	/* DSN options */
 	if(!smtp_dsn_set_ret(message, msg->ret))
 		goto failure;
@@ -489,7 +612,7 @@ void smtp_send(message_t *msg)
 	if(!smtp_8bitmime_set_body(message, msg->body))
 		goto failure;
 
-	/* Add remaining program arguments as message recipients. */
+	/* Add remote message recipients. */
 	list_for_each(ptr, &msg->remote_recipients)
 	{
 		recipient_t *entry = list_entry(ptr, recipient_t, list);
@@ -499,6 +622,29 @@ void smtp_send(message_t *msg)
 		if(!(recipient = smtp_add_recipient (message, entry->address)))
 			goto failure;
 		
+		/* Recipient options set here */
+		if (msg->notify != Notify_NOTSET)
+			if(!smtp_dsn_set_notify (recipient, msg->notify))
+				goto failure;
+	}
+
+	/* Add local message recipients if qualifydomain is set */
+	if (identity->qualifydomain) list_for_each(ptr, &msg->local_recipients)
+	{
+		recipient_t *entry = list_entry(ptr, recipient_t, list);
+		char *qualifiedaddress;
+
+		assert(entry->address);
+
+		qualifiedaddress = xmalloc(strlen(identity->qualifydomain) + strlen(entry->address) + 2);
+		strcpy(qualifiedaddress, entry->address);
+		strcat(qualifiedaddress, "@");
+		strcat(qualifiedaddress, identity->qualifydomain);
+
+		if(!(recipient = smtp_add_recipient (message, qualifiedaddress)))
+			goto failure;
+		free(qualifiedaddress);
+
 		/* Recipient options set here */
 		if (msg->notify != Notify_NOTSET)
 			if(!smtp_dsn_set_notify (recipient, msg->notify))

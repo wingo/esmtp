@@ -69,6 +69,29 @@ It can be one of \fBenabled\fR, \fBdisabled\fR or \fBrequired\fR. It defaults to
 Set the certificate passphrase for the StartTLS extension.
 
 .TP
+\fBhelo\fR
+Set the hostname to identify as when sending HELO or EHLO commands.
+(This is a per identity option, as it should be the name you are
+seen as from the connected host, which may very with host to host
+due to NAT or different naming schemes).
+
+.TP
+\fBqualifydomain\fR
+Make all local addresses to remote ones by adding @ and this
+name.
+
+.TP
+\fBforce sender\fR
+Set a "Sender:" header and ignore those in the message. "%u" will
+be replaced with the username. "%%" by "%".
+
+.TP
+\fBforce reverse_path\fR
+Set the envelope from address. The address given to -f will only
+be used as "From:" when the message contains none. "%u" will
+be repalced with the username. "%%" by "%".
+
+.TP
 \fBpreconnect\fR
 Shell command to execute prior to opening an SMTP connection.
 

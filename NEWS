@@ -11,6 +11,11 @@ News
     * Several configuration fixes/enhancements (SASAJIMA and Dirk Tilger).
 
     * Enforce strict permissions on configuration file (Tiago Macambira).
+
+    * Allow to set helo-name. Allow to send out local mail as remote mail
+    by adding a qualifying domain name. Allow forcing envelope-from and Sender
+    headers. Drop possible admin-added sgid priveleges to be dropped after
+    reading the config. (Bernhard Link)
   
 
   * Version 0.5.0 (2003-11-14):

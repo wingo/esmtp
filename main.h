@@ -29,7 +29,9 @@ enum {
 	EX_TEMPFAIL	= 75,	/**< temp failure; user is invited to retry */
 	EX_PROTOCOL	= 76,	/**< remote error in protocol */
 	EX_NOPERM	= 77,	/**< permission denied */
-	EX_CONFIG	= 78	/**< configuration error */
+	EX_CONFIG	= 78,	/**< configuration error */
+	EX_DROPPERM	= 79,	/**< cannot drop setgid */
+	EX_NOUSERNAME	= 80	/**< cannot determine username */
 };
 
 extern FILE *log_fp;

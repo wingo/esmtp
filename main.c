@@ -8,6 +8,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <assert.h>
 #include <string.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -18,6 +21,21 @@
 #include "smtp.h"
 #include "local.h"
 #include "rcfile.h"
+
+
+static void drop_sgids( void )
+{
+	gid_t real_gid, effective_gid;
+
+	real_gid = getgid();
+	effective_gid = getegid();
+
+	if( setregid(real_gid,real_gid) != 0 )
+	{
+		fprintf (stderr, "Could not drop setgid: %m!\n");
+		exit(EX_DROPPERM);
+	}
+}
 
 
 /** Modes of operation. */
@@ -33,16 +51,28 @@ int verbose = 0;
 
 FILE *log_fp = NULL;
 
-
 static void message_send(message_t *message)
 {
 	int local, remote;
+	identity_t *identity;
+
+	/* Lookup the identity already here */
+	identity = identity_lookup(message->reverse_path); 
+	assert(identity);
 	
-	local = !list_empty(&message->local_recipients);
-	remote = !list_empty(&message->remote_recipients);
+	if( identity->qualifydomain )
+	{
+		local = 0;
+		remote = 1;
+	}
+	else
+	{
+		local = !list_empty(&message->local_recipients);
+		remote = !list_empty(&message->remote_recipients);
+	}
 	
 	if(remote && !local)
-		smtp_send(message);
+		smtp_send(message,identity);
 	else if(!remote && local)
 	{
 		local_init(message);
@@ -51,7 +81,7 @@ static void message_send(message_t *message)
 	else
 	{
 		local_init(message);
-		smtp_send(message);
+		smtp_send(message,identity);
 		local_flush(message);
 	}
 	
@@ -348,6 +378,8 @@ int main (int argc, char **argv)
 
 	/* Parse the rc file. */
 	rcfile_parse(rcfile);
+
+	drop_sgids();
 
 	message_send(message);
 	

@@ -64,7 +64,7 @@ void yyerror (const char *s);
     char *sval;
 }
 
-%token IDENTITY DEFAULT HOSTNAME USERNAME PASSWORD STARTTLS CERTIFICATE_PASSPHRASE PRECONNECT POSTCONNECT MDA
+%token IDENTITY DEFAULT HOSTNAME USERNAME PASSWORD STARTTLS CERTIFICATE_PASSPHRASE PRECONNECT POSTCONNECT MDA QUALIFYDOMAIN HELO FORCE SENDER REVERSE_PATH
 
 %token MAP
 
@@ -112,6 +112,10 @@ statement	: HOSTNAME map STRING	{ identity->host = xstrdup($3); SET_DEFAULT_IDEN
 		| CERTIFICATE_PASSPHRASE map STRING { identity->certificate_passphrase = xstrdup($3); SET_DEFAULT_IDENTITY; }
 		| PRECONNECT map STRING	{ identity->preconnect = xstrdup($3); SET_DEFAULT_IDENTITY; }
 		| POSTCONNECT map STRING { identity->postconnect = xstrdup($3); SET_DEFAULT_IDENTITY; }
+		| QUALIFYDOMAIN map STRING	{ identity->qualifydomain = xstrdup($3); SET_DEFAULT_IDENTITY; }
+		| HELO map STRING	{ identity->helo = xstrdup($3); SET_DEFAULT_IDENTITY; }
+		| FORCE REVERSE_PATH map STRING	{ identity->force_reverse_path = xstrdup($4); SET_DEFAULT_IDENTITY; }
+		| FORCE SENDER map STRING	{ identity->force_sender = xstrdup($4); SET_DEFAULT_IDENTITY; }
 		| MDA map STRING	{ mda = xstrdup($3); }
 		| DEFAULT		{ default_identity = identity; }
 		;

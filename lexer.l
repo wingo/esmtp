@@ -62,6 +62,11 @@ pass(word)?	{ BEGIN(NAME); return PASSWORD; }
 (certificate_)?passphrase	{ return CERTIFICATE_PASSPHRASE; }
 preconnect	{ return PRECONNECT; }
 postconnect	{ return POSTCONNECT; }
+qualifydomain	{ return QUALIFYDOMAIN; }
+helo		{ return HELO; }
+force		{ return FORCE; }
+reverse_path	{ return REVERSE_PATH; }
+sender		{ return SENDER; }
 mda		{ return MDA; }
 
 =		{ return MAP; }
