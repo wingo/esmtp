@@ -1,15 +1,49 @@
-#set SMTP host and service (port)
+# Sample configuration file for ESMTP.
+#
+# 	José Fonseca
+
+# Set SMTP host and service (port)
+#
 hostname = localhost:25
+#
+# This is specified in the format host.example.org[:service] with no whitespace
+# surrounding the colon if service is specified. service may be a name from
+# /etc/services or a decimal port number. If not specified the port defaults to
+# 587.
+#
+# NOTE (from libESMTP documentation): The default port number is set to 587
+# since this is the port that should be used for mail submission, see RFC 2476.
+# By choosing this default now, the API does not change behaviour unexpectedly
+# in the future as use of the new standard becomes commonplace. The hostport
+# nototion simplifies things for the application, the user can type
+# localhost:smtp or localhost:25 where the application expects a host name. 
 
-# set the user name
+# Set the user name
+#
 username = "USERNAME"
+#
+# Note that the equal and quotes are optional but can be helpful in certain
+# circumstances.
 
-# set the password
+# Set the password
 password = "PASSWORD"
 
-# use the Starttls
-#starttls = { enabled | disabled | required }
+# Use the Starttls
+#
+starttls = disabled
+#
+# It can be one of "enabled", "disabled" or "required". It defaults to
+# disabled.
 
-# set the certificate passphrase
+# Set the certificate passphrase
+#
 #certificate_passphrase = "CERTIFICATE_PASSPHRASE"
 
+
+# A different identity which can be selected with the '-f' flag. You can have
+# as many you like.
+#
+identity myself@somewhere.com
+	hostname smtp.somewhere.com:25
+	username "myself"
+	password "secret"

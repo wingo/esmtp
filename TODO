@@ -1,1 +1,2 @@
 - handle the '-t' option
+- safer memory allocation

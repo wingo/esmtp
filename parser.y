@@ -14,17 +14,15 @@
 
 #include <libesmtp.h>
 
+#include "esmtp.h"
+
 /* parser reads these */
 char *rcfile = NULL;		/* path name of dot file */
 
 /* parser sets these */
 int yydebug;			/* in case we didn't generate with -- debug */
 
-extern char *host;
-extern char *user;
-extern char *pass;
-extern enum starttls_option starttls;
-extern char *certificate_passphrase;
+static identity_t *identity = &default_identity;
 
 /* using Bison, this arranges that yydebug messages will show actual tokens */
 extern char * yytext;
@@ -38,7 +36,7 @@ void yyerror (const char *s);
     char *sval;
 }
 
-%token HOSTNAME USERNAME PASSWORD STARTTLS CERTIFICATE_PASSPHRASE 
+%token IDENTITY HOSTNAME USERNAME PASSWORD STARTTLS CERTIFICATE_PASSPHRASE 
 
 %token MAP
 
@@ -50,6 +48,34 @@ void yyerror (const char *s);
 
 rcfile		: /* empty */
 		| statement_list
+		| statement_list identity_list
+		| identity_list
+		;
+
+identity_list	: identity
+		| identity statement_list
+		| identity_list identity statement_list
+		;
+
+
+map		: /* empty */
+		| MAP
+		;
+
+identity	: IDENTITY map STRING
+			{
+				identity_list_t *item;
+				
+				item = malloc(sizeof(identity_list_t));
+				memset(item, 0, sizeof(identity_list_t));
+			
+				*identities_tail = item;
+				identities_tail = &item->next;
+				identity = &item->identity;
+				
+				identity->identity = strdup($3);
+				identity->starttls = Starttls_DISABLED;
+			}
 		;
 
 statement_list	: statement
@@ -57,19 +83,18 @@ statement_list	: statement
 		;
 
 /* future global options should also have the form SET <name> optmap <value> */
-statement	: HOSTNAME MAP STRING	{ host = strdup($3); }
-		| USERNAME MAP STRING	{ user = strdup($3); }
-		| PASSWORD MAP STRING	{ pass = strdup($3); }
-		| STARTTLS MAP DISABLED	{ starttls = Starttls_DISABLED; }
-		| STARTTLS MAP ENABLED	{ starttls = Starttls_ENABLED; }
-		| STARTTLS MAP REQUIRED	{ starttls = Starttls_REQUIRED; }
-		| CERTIFICATE_PASSPHRASE MAP STRING	{ certificate_passphrase = strdup($3); }
+statement	: HOSTNAME map STRING	{ identity->host = strdup($3); }
+		| USERNAME map STRING	{ identity->user = strdup($3); }
+		| PASSWORD map STRING	{ identity->pass = strdup($3); }
+		| STARTTLS map DISABLED	{ identity->starttls = Starttls_DISABLED; }
+		| STARTTLS map ENABLED	{ identity->starttls = Starttls_ENABLED; }
+		| STARTTLS map REQUIRED	{ identity->starttls = Starttls_REQUIRED; }
+		| CERTIFICATE_PASSPHRASE map STRING { identity->certificate_passphrase = strdup($3); }
 		;
 
 %%
 
 /* lexer interface */
-extern char *rcfile;
 extern int lineno;
 extern char *yytext;
 extern FILE *yyin;
@@ -82,21 +107,25 @@ void yyerror (const char *s)
 }
 
 #define RCFILE ".esmtprc"
+
 void parse_rcfile (void)
 {
-    char *home;
+    if(!rcfile)
+    {
+	char *home;
 
-    /* Setup the rcfile name. */
-    if (!(home = getenv("HOME")))
-   	return;
-	
-    if (!(rcfile = malloc(strlen(home) + sizeof(RCFILE) + 2)))
-    	return;
+	/* Setup the rcfile name. */
+	if (!(home = getenv("HOME")))
+	    return;
+	    
+	if (!(rcfile = malloc(strlen(home) + strlen(RCFILE) + 2)))
+	    return;
 
-    strcpy(rcfile, home);
-    if (rcfile[strlen(rcfile) - 1] != '/')
-      strcat(rcfile, "/");
-    strcat(rcfile, RCFILE);
+	strcpy(rcfile, home);
+	if (rcfile[strlen(rcfile) - 1] != '/')
+	  strcat(rcfile, "/");
+	strcat(rcfile, RCFILE);
+    }
   
     /* Open the configuration file and feed it to the lexer. */
     if (!(yyin = fopen(rcfile, "r")))

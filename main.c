@@ -37,14 +37,19 @@
 #include <auth-client.h>
 #include <libesmtp.h>
 
-char *from = NULL;
-char *host = NULL;
-char *user = NULL;
-char *pass = NULL;
-enum starttls_option starttls = Starttls_DISABLED;
-char *certificate_passphrase = NULL;
+#include "esmtp.h"
 
-extern void parse_rcfile(void);
+/* Identity management */
+identity_t default_identity = {
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	Starttls_DISABLED,
+	NULL
+};
+
+identity_list_t *identities_head = NULL, **identities_tail = &identities_head;
 
 /* Callback function to read the message from a file.  Since libESMTP does not
  * provide callbacks which translate line endings, one must be provided by the
@@ -197,14 +202,18 @@ void version (void)
 int authinteract (auth_client_request_t request, char **result, int fields,
 		  void *arg)
 {
+    identity_t *identity = (identity_t *)arg;
     int i;
 
+    if(!identity)
+	return 0;
+    
     for (i = 0; i < fields; i++)
     {
-	if (request[i].flags & AUTH_USER && user)
-	    result[i] = user;
-	else if (request[i].flags & AUTH_PASS && pass)
-	    result[i] = pass;
+	if (request[i].flags & AUTH_USER && identity->user)
+	    result[i] = identity->user;
+	else if (request[i].flags & AUTH_PASS && identity->pass)
+	    result[i] = identity->pass;
 	else
 	    return 0;
     }
@@ -213,12 +222,16 @@ int authinteract (auth_client_request_t request, char **result, int fields,
 
 int tlsinteract (char *buf, int buflen, int rwflag, void *arg)
 {
+    identity_t *identity = (identity_t *)arg;
     char *pw;
     int len;
 
-    if (certificate_passphrase)
+    if(!identity)
+	return 0;
+    
+    if (identity->certificate_passphrase)
     {
-	pw = certificate_passphrase;
+	pw = identity->certificate_passphrase;
 	len = strlen (pw);
 	if (len + 1 > buflen)
 	    return 0;
@@ -251,13 +264,17 @@ int main (int argc, char **argv)
     int ret;
     enum notify_flags notify = Notify_NOTSET;
     FILE *fp = NULL;
+    identity_t *identity = &default_identity;
+    char *from = NULL;
+    identity_list_t *p;
 
     /* Parse the rc file. */
     parse_rcfile();
 
     /* This program sends only one message at a time.  Create an SMTP session.
      */
-    auth_client_init (); session = smtp_create_session ();
+    auth_client_init ();
+    session = smtp_create_session ();
 
     while ((c = getopt (argc, argv,
 			"A:B:b:C:cd:e:F:f:Gh:IiL:M:mN:nO:o:p:q:R:r:sTtV:vX:")) != EOF)
@@ -273,6 +290,7 @@ int main (int argc, char **argv)
 
 	    case 'C':
 		/* Select configuration file */
+		rcfile = optarg;
 		break;
 
 	    case 'F':
@@ -394,6 +412,16 @@ int main (int argc, char **argv)
 	    case 'r':
 		/* Obsolete -f flag */
 		from = optarg;
+		p = identities_head;
+		while(p)
+		{
+		    if(!strcmp(p->identity.identity, from))
+		    {
+			identity = &p->identity;
+			break;
+		    }
+		    p = p->next;
+		}
 		break;
 
 	    case 'h':
@@ -502,20 +530,20 @@ int main (int argc, char **argv)
      * number of 587, however this is not widely deployed so the port is
      * specified as 25 along with the default MTA host.
      */
-    smtp_set_server (session, host ? host : "localhost:25");
+    smtp_set_server (session, identity->host ? identity->host : "localhost:25");
 
     /* Set the SMTP Starttls extension. */
-    smtp_starttls_enable (session, starttls);
+    smtp_starttls_enable (session, identity->starttls);
 
     /* Do what's needed at application level to use authentication. */
     authctx = auth_create_context ();
     auth_set_mechanism_flags (authctx, AUTH_PLUGIN_PLAIN, 0);
-    auth_set_interact_cb (authctx, authinteract, NULL);
+    auth_set_interact_cb (authctx, authinteract, identity);
 
     /* Use our callback for X.509 certificate passwords.  If STARTTLS is not in
      * use or disabled in configure, the following is harmless.
      */
-    smtp_starttls_set_password_cb (tlsinteract, NULL);
+    smtp_starttls_set_password_cb (tlsinteract, identity);
 
     /* Now tell libESMTP it can use the SMTP AUTH extension. */
     smtp_auth_set_context (session, authctx);

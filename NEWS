@@ -1,0 +1,17 @@
+Version 0.3
+
+	* Capability to generate log files.
+	* Better verbose output.
+	* Minor bug fixes and documentation enhancements.
+	* Multiple identities.
+
+Version 0.2:
+
+	* Packaging corrections.
+	* Minor bug fixes and documentation enhancements.
+	* Use sendmail exit codes.
+ 
+
+Version 0.1:
+
+	* Initial release

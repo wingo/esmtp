@@ -54,6 +54,7 @@ void escapes(const char *tp, char *cp);
 
 
 
+identity	{ BEGIN(NAME); return IDENTITY; }
 host(name)?	{ BEGIN(NAME); return HOSTNAME; }
 user(name)?	{ BEGIN(NAME); return USERNAME; }
 pass(word)?	{ BEGIN(NAME); return PASSWORD; }

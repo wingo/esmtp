@@ -137,7 +137,6 @@ Verify names only \- do not try to collect or deliver a message.
 
 .TP
 .BI \-C file
-(ignored)
 Use alternate configuration file.
 
 .TP
@@ -160,6 +159,9 @@ if that header is missing during initial submission.
 The envelope sender address is used as the recipient
 for delivery status notifications
 and may also appear in a Return-Path: header.
+.PP
+This address is also used to select from different identities in the
+configuration file.
 
 .TP
 .BI \-G
