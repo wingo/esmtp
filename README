@@ -18,35 +18,6 @@ Introduction
   information.
 
 
-Rationale
-~~~~~~~~~
-
-  Since the moment I switched to Linux I had some problems to have email
-  properly configurated to my personal needs.  I use a POP3/SMTP mail account
-  for my personal mail, and I usually connect to the internet with my laptop
-  via several LANs (home, work, ...) with several different firewall
-  configurations. The standard MTAs didn't provided the flexibility I needed --
-  they either failed to deliver the mail directly or failed to authenticate
-  with the relay, or were configured system-wide and conflicted with the local
-  MTA.
-  
-  <<fetchmail>> always worked fine to get email, but I needed a <<sendmail>>
-  alike program to send email from <<Mutt>>.  Basically I wanted a program
-  which could be for SMTP what <<fetchmail>> was for POP3, i.e., an user
-  configurable MTA with authorization support.
-
-  Some small modifications to the <<<mail-file>>> example from <<libESMTP>> did
-  the trick.  After receiving positive feedback from the <<libESMTP>> author,
-  Brian Stafford, I decided to make the program more confortable for others to
-  use -- adding a command-line option parser extracted from sendmail, a
-  configuration file parser from <<fetchmail>>, a man page based on <<ssmtp>>
-  and <<sendmail>> man pages and using autotools to wrap it all up.  The result
-  of this cut and paste effort is <<esmtp>>.  Well, the first version, that is.
-  Since then a few more bells and whistles were added, with the help of some
-  contributors.
-
-
-
 Configuration
 ~~~~~~~~~~~~~
 

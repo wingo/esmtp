@@ -16,7 +16,7 @@ News
     * Further Delivery Status Notification ('-R' and '-V' options).
 
 
-  * Version 0.3:
+  * Version 0.3 (2003-03-10):
 
     * Capability to generate log files.
 
@@ -27,7 +27,7 @@ News
     * Multiple identities (Jerome).
 
 
-  * Version 0.2:
+  * Version 0.2 (2002-10-31):
 
     * Packaging corrections.
 
@@ -36,7 +36,7 @@ News
     * Use sendmail exit codes.
     
 
-  * Version 0.1:
+  * Version 0.1 (2002-09-26):
 
     * Initial release.
 
