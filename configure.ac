@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(Makefile.am)
-AM_INIT_AUTOMAKE(esmtp, 0.1)
+AM_INIT_AUTOMAKE(esmtp, 0.2)
 
 AM_MAINTAINER_MODE
 
