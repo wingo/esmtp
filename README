@@ -46,70 +46,8 @@ mda "/usr/bin/procmail -d %T"
 * Configuration options
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-  Options are specified by giving a <keyword=value> in the configuration
-  file.  The equal sign is optional and can be replaced by whitespace.  The
-  value may be enclose in simple or double quotes, in which case special
-  characters can be escaped as in normal <C> strings.
-
-  [hostname] - set SMTP host and service (port).
-  
-    This is specified in the format <<<host.example.org[:service]>>> with no
-    whitespace surrounding the colon if service is specified. service may be a
-    name from <<</etc/services>>> or a decimal port number.  If not specified
-    the port defaults to 587.
-   
-    Note (from <<libESMTP>> documentation): the default port number is set to
-    587 since this is the port that should be used for mail submission, see RFC
-    2476.  By choosing this default now, the API does not change behavior
-    unexpectedly in the future as use of the new standard becomes commonplace.
-    The hostport notation simplifies things for the application, the user can
-    type <<<localhost:smtp>>> or <<<localhost:25>>> where the application
-    expects a host name.
-
-  [username] - set the user name.
-
-  [password] - set the password.
-
-  [starttls] - determine the usage of the StartTLS extension.
-  
-    It can be one of <"enabled">, <"disabled"> or <"required">. It defaults to
-    disabled.
-
-  [certificate_passphrase] - set the certificate passphrase.
-
-  [identity] - define an identity.
-
-    An identities is a set of options associated with a given address.  For
-    example:
-
---------------------------------------
-identity = myself@somewhere.com
-        hostname = smtp.somewhere.com:25
-        username = "myself"
-        password = "secret"
---------------------------------------
-
-    Identities are be selected by the address specified in the <-f> flag.  You
-    can have as many you like.
-
-    The options up to the first <identity> option constitute the default
-    identity.
-
-
-    Note: the default identity settings are not shared by the other identities.
-    Everything (username, password, etc.) must be specified for every identity
-    even if they don't differ from the default identity.
-
-  [mda] - set the Mail Delivery Agent (MDA).
-   
-    Local delivery addresses will be inserted into the MDA command wherever you
-    place a <%T>. The mail message's From address will be inserted where you
-    place an <%F>.
-
-    Some common MDAs are <"/usr/bin/procmail -d %T">,
-    <"/usr/bin/deliver"> and <"/usr/lib/mail.local %T">.
-
-    See below for more information about using <<esmtp>> with an MDA.
+  See the <<esmtprc>> man page for more detailed information on the
+  configuration options.
 
 
 Invocation

@@ -1,6 +1,13 @@
 News
 ~~~~
 
+  * Version 0.4.1 (under development):
+  
+    * Packaging fixes.
+
+    * Esmtprc man page.
+    
+    
   * Version 0.4 (2003-07-12):
 
     * Debian packaging.

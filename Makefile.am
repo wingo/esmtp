@@ -1,6 +1,6 @@
 bin_PROGRAMS = esmtp
 
-dist_man_MANS = esmtp.1
+dist_man_MANS = esmtp.1 esmtprc.5
 
 esmtp_SOURCES = \
 	lexer.l \
