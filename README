@@ -46,7 +46,7 @@ mda "/usr/bin/procmail -d %T"
 * Configuration options
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-  Options are speficied by giving a <keyword=value> in the configuration
+  Options are specified by giving a <keyword=value> in the configuration
   file.  The equal sign is optional and can be replaced by whitespace.  The
   value may be enclose in simple or double quotes, in which case special
   characters can be escaped as in normal <C> strings.
@@ -60,7 +60,7 @@ mda "/usr/bin/procmail -d %T"
    
     Note (from <<libESMTP>> documentation): the default port number is set to
     587 since this is the port that should be used for mail submission, see RFC
-    2476.  By choosing this default now, the API does not change behaviour
+    2476.  By choosing this default now, the API does not change behavior
     unexpectedly in the future as use of the new standard becomes commonplace.
     The hostport notation simplifies things for the application, the user can
     type <<<localhost:smtp>>> or <<<localhost:25>>> where the application
@@ -129,7 +129,7 @@ Interfacing to Mail User Agents
   the makefile when building from source.
 
   If by any reason it is not possible to have (such as no administrator
-  priviledges or the use of another MTA for local delivery) then you will have
+  privileges or the use of another MTA for local delivery) then you will have
   to reconfigure your MUA to use the esmtp executable instead.
 
 
@@ -194,7 +194,7 @@ Interfacing with other mail applications
   By default <<fetchmail>> delivers messages via SMTP to port 25 on the machine
   it is running.  Because <<esmtp>> has no SMTP server if you are not using another 
   MTA for local delivery then you will need to configure <<fetchmail>> to use 
-  <<esmtp>> executable.  This is acomplished by adding the following lines to the top
+  <<esmtp>> executable.  This is accomplished by adding the following lines to the top
   of your <<<~/.fetchmailrc>>>:
 
 -------------------------------------

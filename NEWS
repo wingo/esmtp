@@ -11,9 +11,9 @@ News
 
     * Extraction of the recipients from the headers ('-t' option).
 
-    * 8bit-MIME extension ('-B' option).
+    * 8bit-MIME extension support ('-B' option).
 
-    * Further Delivery Status Notification ('-R' and '-V' options).
+    * Further Delivery Status Notification support ('-R' and '-V' options).
 
 
   * Version 0.3 (2003-03-10):
