@@ -1,0 +1,2 @@
+- handle the '-t' option
+- better handling of other sendmail options

@@ -1,0 +1,15 @@
+#set SMTP host and service (port)
+hostname = localhost:25
+
+# set the user name
+username = "USERNAME"
+
+# set the password
+password = "PASSWORD"
+
+# use the Starttls
+#starttls = { enabled | disabled | required }
+
+# set the certificate passphrase
+#certificate_passphrase = "CERTIFICATE_PASSPHRASE"
+

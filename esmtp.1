@@ -1,0 +1,418 @@
+.\" Based on ssmtp.1 and sendmail.8 man pages of the sSMTP and 
+.\" sendmail distributions respectively.
+.\" 
+.\" Portions are
+.\"     Copyright (c) 1998-2002 Sendmail, Inc. and its suppliers.
+.\"         All rights reserved.
+.\"     Copyright (c) 1983, 1997 Eric P. Allman.  All rights reserved.
+.\"     Copyright (c) 1988, 1991, 1993
+.\"         The Regents of the University of California.  All rights reserved.
+.TH ESMTP 1
+.SH NAME
+esmtp
+.SH SUMMARY
+libESMTP to Sendmail compatibility interface
+.SH SYNOPSIS
+.B esmtp
+.RI "[ " flags " ] [ " address " "  ... " ]"
+.br
+.SH DESCRIPTION
+.B Esmtp
+is a send-only 
+.B sendmail
+emulator for machines which normally retrieve their mail
+up from a centralized mailhub
+using programs such as
+.B fetchmail
+.
+.PP
+.B Esmtp
+does not attempt to provide all the functionality of 
+.B sendmail
+: it is intended to be used by other 
+mail user agents as 
+.B mutt
+.
+
+.SH OPTIONS
+Most 
+.B sendmail
+options are irrelevent to 
+.B esmtp
+. Those marked ``ignored'' or
+``default'' have no effect on mail transfer.  Those marked ``unsupported''
+are fatal errors.  Those marked ``simulated'' are not errors, but the result
+is for the program to exit with an informative message. A sort of fatal
+non-error.
+
+.TP
+.B \-Ac
+(ignored)
+Use submit.cf even if the operation mode does not indicate
+an initial mail submission.
+
+.TP
+.B \-Am
+(ignored)
+Use sendmail.cf even if the operation mode indicates
+an initial mail submission.
+
+.TP
+.BI \-B type
+(ignored)
+Set the body type to
+.IR type .
+Current legal values are 
+7BIT 
+or  
+8BITMIME.
+
+.TP
+.B \-ba
+(ignored)
+Go into 
+ARPANET 
+mode.  All input lines must end with a CR-LF, 
+and all messages will be generated with a CR-LF at the end.  
+Also, 
+the ``From:'' and ``Sender:'' 
+fields are examined for the name of the sender.
+
+.TP
+.B \-bd
+(ignored)
+Run as a daemon.
+
+.TP
+.B \-bD
+(ignored)
+Same as
+.B \-bd
+except runs in foreground.
+
+.TP
+.B \-bh
+(ignored)
+Print the persistent host status database.
+
+.TP
+.B \-bH
+(ignored)
+Purge expired entries from the persistent host status database.
+
+.TP
+.B \-bi
+(ignored)
+Initialize the alias database.
+
+.TP
+.B \-bm
+(ignored)
+Deliver mail in the usual way (default).
+
+.TP
+.B \-bp
+(ignored)
+Print a listing of the queue(s).
+
+.TP
+.B \-bP
+(ignored)
+Print number of entries in the queue(s);
+only available with shared memory support.
+
+.TP
+.B \-bs
+(ignored)
+Use the 
+SMTP 
+protocol as described in 
+RFC821 
+on standard input and output.  
+This flag implies all the operations of the
+.B \-ba
+flag that are compatible with 
+SMTP.
+
+.TP
+.B \-bt
+(ignored)
+Run in address test mode.  
+
+.TP
+.B \-bv
+(ignored)
+Verify names only \- do not try to collect or deliver a message.
+
+.TP
+.BI \-C file
+(ignored)
+Use alternate configuration file.
+
+.TP
+.BI \-d X
+(ignored)
+Set debugging value to
+.IR X .
+.ne 1i
+
+.TP
+.BI \-F fullname
+Set the full name of the sender.
+
+.TP
+.BI \-f name
+Sets the name of the ``from'' person 
+(i.e., the envelope sender of the mail).
+This address may also be used in the From: header
+if that header is missing during initial submission.
+The envelope sender address is used as the recipient
+for delivery status notifications
+and may also appear in a Return-Path: header.
+.B \-f
+should only be used 
+by ``trusted'' users 
+(normally
+.IR root ", " daemon ,
+and
+.IR network )
+or if the person you are trying to become 
+is the same as the person you are.
+Otherwise,
+an X-Authentication-Warning header
+will be added to the message.
+
+.TP
+.BI \-G
+(ignored)
+Relay (gateway) submission of a message,
+e.g., when
+.BR rmail
+calls
+.B sendmail .
+
+.TP
+.BI \-h N
+(ignored)
+Set the hop count to
+.IR N .
+The hop count is incremented every time the mail is 
+processed.
+When it reaches a limit, 
+the mail is returned with an error message,
+the victim of an aliasing loop.  
+If not specified, 
+``Received:'' lines in the message are counted.
+
+.TP
+.B \-i
+(ignored)
+Ignore dots alone on lines by themselves in incoming messages.
+This should be set if you are reading data from a file.
+
+.TP
+.BI "\-L " tag
+(ignored)
+Set the identifier used in syslog messages to the supplied
+.IR tag .
+
+.TP
+.BI "\-N " dsn
+Set delivery status notification conditions to
+.IR dsn ,
+which can be 
+`never' 
+for no notifications 
+or a comma separated list of the values 
+`failure' 
+to be notified if delivery failed, 
+`delay'
+to be notified if delivery is delayed, and 
+`success' 
+to be notified when the message is successfully delivered.
+
+.TP
+.B \-n
+(ignored)
+Don't do aliasing.
+
+.TP
+\fB\-O\fP \fIoption\fR=\fIvalue\fR 
+(ignored)
+Set option
+.I option
+to the specified
+.IR value .
+This form uses long names.  See below for more details.
+
+.TP
+.BI \-o "x value"
+(ignored)
+Set option
+.I x
+to the specified
+.IR value .
+This form uses single character names only.  
+The short names are not described in this manual page; 
+see the
+.I "Sendmail Installation and Operation Guide"
+for details.
+
+.TP
+.BI \-p protocol
+(ignored)
+Set the name of the protocol used to receive the message.  
+This can be a simple protocol name such as ``UUCP'' 
+or a protocol and hostname, such as ``UUCP:ucbvax''.
+
+.TP
+\fB\-q\fR[\fItime\fR] 
+(ignored)
+Process saved messages in the queue at given intervals.  
+If
+.I time
+is omitted, process the queue once.
+.I Time
+is given as a tagged number, 
+with 
+`s' 
+being seconds, 
+`m' 
+being minutes (default), 
+`h' 
+being hours, 
+`d' 
+being days, 
+and 
+`w' 
+being weeks.
+For example, 
+`\-q1h30m' 
+or 
+`\-q90m' 
+would both set the timeout to one hour thirty minutes.
+By default,
+.B sendmail
+will run in the background.
+This option can be used safely with
+.BR \-bd .
+
+.TP
+\fB\-qp\fR[\fItime\fR] 
+(ignored)
+Similar to \fB\-q\fItime\fR,
+except that instead of periodically forking a child to process the queue,
+sendmail forks a single persistent child for each queue
+that alternates between processing the queue and sleeping.
+The sleep time is given as the argument; it defaults to 1 second.
+The process will always sleep at least 5 seconds if the queue was
+empty in the previous queue run.
+
+.TP
+\fB\-q\fRf
+(ignored)
+Process saved messages in the queue once and do not fork(),
+but run in the foreground.
+
+.TP
+\fB\-q\fRG name
+(ignored)
+Process jobs in queue group called
+.I name
+only.
+
+.TP
+\fB\-q\fR[\fI!\fR]I substr
+(ignored)
+Limit processed jobs to those containing
+.I substr
+as a substring of the queue id or not when
+.I !
+is specified.
+
+.TP
+\fB\-q\fR[\fI!\fR]R substr
+(ignored)
+Limit processed jobs to those containing
+.I substr
+as a substring of one of the recipients or not when
+.I !
+is specified.
+
+.TP
+\fB\-q\fR[\fI!\fR]S substr
+(ignored)
+Limit processed jobs to those containing
+.I substr
+as a substring of the sender or not when
+.I !
+is specified.
+
+.TP
+.BI "\-R " return
+(ignored)
+Set the amount of the message to be returned 
+if the message bounces.
+The
+.I return
+parameter can be 
+`full' 
+to return the entire message or 
+`hdrs' 
+to return only the headers.  
+In the latter case also local bounces return only the headers.
+
+.TP
+.BI \-r name
+An alternate and obsolete form of the
+.B \-f
+flag.
+
+.TP
+.B \-t
+(unsupported)
+Read message for recipients.  
+To:, Cc:, and Bcc: lines will be scanned for recipient addresses.  
+The Bcc: line will be deleted before transmission.
+
+.TP
+.BI "\-V " envid
+(ignored)
+Set the original envelope id.  
+This is propagated across SMTP to servers that support DSNs 
+and is returned in DSN-compliant error messages.
+
+.TP
+.B \-v
+Go into verbose mode.  
+Alias expansions will be announced, etc.
+
+.TP
+.BI "\-X " logfile
+(ignored)
+Log all traffic in and out of mailers in the indicated log file.
+This should only be used as a last resort 
+for debugging mailer bugs.  
+It will log a lot of data very quickly.
+
+.TP
+.B \-\-
+Stop processing command flags and use the rest of the arguments as
+addresses.
+.SH FILES
+.TP
+ ~/.esmtp
+configuration file
+
+.SH SEE ALSO
+fetchmail(1)
+
+.SH DIAGNOSTICS
+
+.SH AUTHORS
+José Fonseca (j_r_fonseca@yahoo.co.uk)
+Brian Stafford (brian@stafford.uklinux.net)
+
+.SH BUGS
+.B esmtp
+ignores most of sendmail options.
