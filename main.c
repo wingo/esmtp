@@ -192,10 +192,9 @@ main (int argc, char **argv)
   parse_rcfile();
 
   /* This program sends only one message at a time.  Create an SMTP
-     session and add a message to it. */
+     session. */
   auth_client_init ();
   session = smtp_create_session ();
-  message = smtp_add_message (session);
 
   while ((c = getopt (argc, argv, 
 	  	      "A:B:b:C:cd:e:F:f:Gh:IiL:M:mN:nO:o:p:q:R:r:sTtV:vX:")) != EOF)
@@ -433,13 +432,13 @@ main (int argc, char **argv)
   sa.sa_flags = 0;
   sigaction (SIGPIPE, &sa, NULL); 
 
-  /* Set the SMTP Starttls extension. */
-  smtp_starttls_enable (session, starttls);
-
   /* Set the host running the SMTP server.  LibESMTP has a default port
      number of 587, however this is not widely deployed so the port
      is specified as 25 along with the default MTA host. */
   smtp_set_server (session, host ? host : "localhost:25");
+
+  /* Set the SMTP Starttls extension. */
+  smtp_starttls_enable (session, starttls);
 
   /* Do what's needed at application level to use authentication.
    */
@@ -455,6 +454,15 @@ main (int argc, char **argv)
    */
   smtp_auth_set_context (session, authctx);
 
+  /* At present it can't handle one recipient only out of many
+     failing.  Make libESMTP require all specified recipients to
+     succeed before transferring a message.  */
+  smtp_option_require_all_recipients (session, 1);
+  
+  /* Add a message to the SMTP session.
+   */
+  message = smtp_add_message (session);
+  
   /* Set the reverse path for the mail envelope.  (NULL is ok)
    */
   smtp_set_reverse_path (message, from);
@@ -467,11 +475,6 @@ main (int argc, char **argv)
   smtp_set_messagecb (message, readlinefp_cb, stdin);
 #endif
 
-  /* At present it can't handle one recipient only out of many
-     failing.  Make libESMTP require all specified recipients to
-     succeed before transferring a message.  */
-  smtp_option_require_all_recipients (session, 1);
-    
   /* Add remaining program arguments as message recipients.
    */
   while (optind < argc)
