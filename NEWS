@@ -2,6 +2,8 @@ Version 0.4 (under development)
 
 	* Debian packaging.
 	* Fixes to compile on FreeBSD (Tim Hemel).
+	* Local delivery via a MDA.
+	* Extraction of the recipients from the headers ('-t' option).
 
 
 Version 0.3

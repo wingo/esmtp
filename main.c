@@ -15,6 +15,15 @@
 #include "local.h"
 
 
+/** Modes of operation. */
+typedef enum {
+	ENQUEUE,		/**< delivery mode */
+	NEWALIAS,		/**< initialize alias database */
+	MAILQ,			/**< list mail queue */
+	FLUSHQ			/**< flush the mail queue */
+} opmode_t;
+
+
 int verbose = 0;
 
 FILE *log_fp = NULL;
@@ -26,16 +35,8 @@ int main (int argc, char **argv)
 	enum notify_flags notify = Notify_NOTSET;
 	char *from = NULL;
 	message_t *message;
-	int local, remote;
-	int parse_headers;
-	
-	/* Modes of operation. */
-	enum {
-		ENQUEUE,		/* delivery mode */
-		NEWALIAS,		/* initialize alias database */
-		MAILQ,			/* list mail queue */
-		FLUSHQ			/* flush the mail queue */
-	} mode;
+	int parse_headers, local, remote;
+	opmode_t mode;
 	
 	identities_init();
 
@@ -345,6 +346,8 @@ int main (int argc, char **argv)
 	}
 	
 	message_free(message);
+
+	identities_cleanup();
 
 	exit(EX_OK);
 }

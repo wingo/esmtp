@@ -52,3 +52,14 @@ identity myself@somewhere.com
 # NOTE: the default indentity settings aren't shared by the other identities.
 # Everything (username, password, etc.) must be specified for every identity
 # even if they don't differ from the default identity.
+
+
+# Set the Mail Delivery Agent (MDA)
+#
+mda = "/usr/bin/procmail -d %T"
+#
+# Some possible MDAs are
+# - "/usr/bin/procmail -d %T"
+# - "/usr/bin/deliver"
+# - "/usr/sbin/sendmail -i -f %F %T"
+# - "/usr/lib/mail.local %s"

@@ -15,11 +15,7 @@
 #include "xmalloc.h"
 
 
-#if 0
 char *mda = NULL;
-#else
-char *mda = "/usr/bin/procmail -d %T";
-#endif
 
 FILE *mda_fp = NULL;
 
