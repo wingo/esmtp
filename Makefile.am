@@ -19,7 +19,16 @@ esmtp_SOURCES = \
 	smtp.h \
 	xmalloc.h
 
-EXTRA_DIST = sample.esmtprc
+EXTRA_DIST = \
+	sample.esmtprc \
+	debian/changelog \
+	debian/compat \
+	debian/config \
+	debian/control \
+	debian/copyright \
+	debian/postinst \
+	debian/rules \
+	debian/templates
 
 AM_YFLAGS = -d
 
