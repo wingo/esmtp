@@ -30,8 +30,16 @@ typedef struct {
 	struct list_head remote_recipients;	/**< remote recipients */
 	struct list_head local_recipients;	/**< local recipients */
 
-	enum notify_flags notify;	/**< libESMTP notificiation flags */
+	/** \name Delivery Status Notification (DSN) flags */
+	/*@{*/
+	enum ret_flags ret;		/**< reporting options */
+	char *envid;			/**< envelope identifier */
+	enum notify_flags notify;	/**< notification options */
+	/*@}*/
     
+	/** 8bit-MIME transport */
+	enum e8bitmime_body body;
+   
 	/** \name buffering */
 	/*@{*/
 	char *buffer;
@@ -52,6 +60,8 @@ void message_free(message_t *m);
 void message_set_reverse_path(message_t *message, const char *address);
 
 void message_add_recipient(message_t *message, const char *address);
+
+void message_set_envid(message_t *message, const char *address);
 
 unsigned message_parse_headers(message_t *message);
 

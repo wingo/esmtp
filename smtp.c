@@ -155,87 +155,101 @@ static const char * message_cb (void **buf, int *len, void *arg)
 
 static void event_cb (smtp_session_t session, int event_no, void *arg, ...)
 {
-	FILE *fp = arg;
 	va_list ap;
 	const char *mailbox;
 	smtp_message_t message;
 	smtp_recipient_t recipient;
 	const smtp_status_t *status;
-	static int sizeticking = 0, sizeticker;
-
-	if (event_no != SMTP_EV_MESSAGEDATA && sizeticking)
-	{
-		fputs("\n", fp);
-		sizeticking = 0;
-	}
 
 	va_start (ap, arg);
-	switch (event_no) {
-		case SMTP_EV_CONNECT:
-			fputs("Connected to MTA\n", fp);
-			break;
-			
-		case SMTP_EV_MAILSTATUS:
-			mailbox = va_arg (ap, const char *);
-			message = va_arg (ap, smtp_message_t);
-			status = smtp_reverse_path_status (message);
-			fprintf (fp, "From %s: %d %s", mailbox, status->code, status->text);
-			break;
-
-		case SMTP_EV_RCPTSTATUS:
-			mailbox = va_arg (ap, const char *);
-			recipient = va_arg (ap, smtp_recipient_t);
-			status = smtp_recipient_status (recipient);
-			fprintf (fp, "To %s: %d %s", mailbox, status->code, status->text);
-			break;
-			
-		case SMTP_EV_MESSAGEDATA:
-			message = va_arg (ap, smtp_message_t);
-			if (!sizeticking)
-			{
-				fputs("Message data: ", fp);
-				sizeticking = 1;
-				sizeticker = SIZETICKER - 1;
-			}
-			sizeticker += va_arg (ap, int);
-			while (sizeticker >= SIZETICKER)
-			{
-				fputc('.', fp);
-				sizeticker -= SIZETICKER;
-			}
-			break;
-
-		case SMTP_EV_MESSAGESENT:
-			message = va_arg (ap, smtp_message_t);
-			status = smtp_message_transfer_status (message);
-			fprintf (fp, "Message sent: %d %s", status->code, status->text);
-			break;
-			
-		case SMTP_EV_DISCONNECT:
-			fputs("Disconnected to MTA\n", fp);
-			break;
 		
-		default:
+	switch (event_no) {
+		case SMTP_EV_EXTNA_DSN:
+			fprintf(stderr, "Delivery Status Notification extension not supported by MTA\n");
+			break;
+		case SMTP_EV_EXTNA_8BITMIME:
+			fprintf(stderr, "8bit-MIME extension not supported by MTA\n");
+			break;
+		case SMTP_EV_EXTNA_STARTTLS:
+			fprintf(stderr, "StartTLS extension not supported by MTA\n");
 			break;
 	}
+	
+	if (verbose)
+	{
+		static int sizeticking = 0, sizeticker;
+
+		if (event_no != SMTP_EV_MESSAGEDATA && sizeticking)
+		{
+			fputs("\n", stdout);
+			sizeticking = 0;
+		}
+
+		switch (event_no) {
+			case SMTP_EV_CONNECT:
+				fputs("Connected to MTA\n", stdout);
+				break;
+				
+			case SMTP_EV_MAILSTATUS:
+				mailbox = va_arg (ap, const char *);
+				message = va_arg (ap, smtp_message_t);
+				status = smtp_reverse_path_status (message);
+				fprintf (stdout, "From %s: %d %s", mailbox, status->code, status->text);
+				break;
+
+			case SMTP_EV_RCPTSTATUS:
+				mailbox = va_arg (ap, const char *);
+				recipient = va_arg (ap, smtp_recipient_t);
+				status = smtp_recipient_status (recipient);
+				fprintf (stdout, "To %s: %d %s", mailbox, status->code, status->text);
+				break;
+				
+			case SMTP_EV_MESSAGEDATA:
+				message = va_arg (ap, smtp_message_t);
+				if (!sizeticking)
+				{
+					fputs("Message data: ", stdout);
+					sizeticking = 1;
+					sizeticker = SIZETICKER - 1;
+				}
+				sizeticker += va_arg (ap, int);
+				while (sizeticker >= SIZETICKER)
+				{
+					fputc('.', stdout);
+					sizeticker -= SIZETICKER;
+				}
+				break;
+
+			case SMTP_EV_MESSAGESENT:
+				message = va_arg (ap, smtp_message_t);
+				status = smtp_message_transfer_status (message);
+				fprintf (stdout, "Message sent: %d %s", status->code, status->text);
+				break;
+				
+			case SMTP_EV_DISCONNECT:
+				fputs("Disconnected to MTA\n", stdout);
+				break;
+		}
+	}
+		
 	va_end (ap);
 }
 
 static void monitor_cb (const char *buf, int buflen, int writing, void *arg)
 {
-	FILE *fp = arg;
+	assert(log_fp);
 
 	if (writing == SMTP_CB_HEADERS)
 	{
-		fputs ("H: ", fp);
-		fwrite (buf, 1, buflen, fp);
+		fputs ("H: ", log_fp);
+		fwrite (buf, 1, buflen, log_fp);
 		return;
 	}
 	
-	fputs (writing ? "C: " : "S: ", fp);
-	fwrite (buf, 1, buflen, fp);
+	fputs (writing ? "C: " : "S: ", log_fp);
+	fwrite (buf, 1, buflen, log_fp);
 	if (buf[buflen - 1] != '\n')
-		putc ('\n', fp);
+		putc ('\n', log_fp);
 }
 
 /**
@@ -306,7 +320,6 @@ void smtp_send(message_t *msg)
 	auth_context_t authctx;
 	const smtp_status_t *status;
 	struct sigaction sa;
-	int ret;
 	identity_t *identity;
 	struct list_head *ptr;
 	
@@ -314,19 +327,21 @@ void smtp_send(message_t *msg)
 	 * session.
 	 */
 	auth_client_init ();
-	session = smtp_create_session ();
+	if(!(session = smtp_create_session ()))
+		goto failure;
 
 	/* Add a protocol monitor. */
 	if(log_fp)
-		smtp_set_monitorcb (session, monitor_cb, log_fp, 1);
+		if(!smtp_set_monitorcb (session, monitor_cb, NULL, 1))
+			goto failure;
 
 	/* Lookup the identity */
 	identity = identity_lookup(msg->reverse_path); 
 	assert(identity);
 
 	/* Set the event callback. */
-	if(verbose)
-		smtp_set_eventcb (session, event_cb, stdout);
+	if(!smtp_set_eventcb (session, event_cb, NULL))
+		goto failure;
 
 	/* NB.  libESMTP sets timeouts as it progresses through the protocol.  In
 	 * addition the remote server might close its socket on a timeout.
@@ -341,10 +356,12 @@ void smtp_send(message_t *msg)
 	 * number of 587, however this is not widely deployed so the port is
 	 * specified as 25 along with the default MTA host.
 	 */
-	smtp_set_server (session, identity->host ? identity->host : "localhost:25");
+	if(!smtp_set_server (session, identity->host ? identity->host : "localhost:25"))
+		goto failure;
 
 	/* Set the SMTP Starttls extension. */
-	smtp_starttls_enable (session, identity->starttls);
+	if(!smtp_starttls_enable (session, identity->starttls))
+		goto failure;
 
 	/* Do what's needed at application level to use authentication. */
 	authctx = auth_create_context ();
@@ -354,39 +371,57 @@ void smtp_send(message_t *msg)
 	/* Use our callback for X.509 certificate passwords.  If STARTTLS is not in
 	 * use or disabled in configure, the following is harmless.
 	 */
-	smtp_starttls_set_password_cb (tlsinteract, identity);
+	if(!smtp_starttls_set_password_cb (tlsinteract, identity))
+		goto failure;
 
 	/* Now tell libESMTP it can use the SMTP AUTH extension. */
-	smtp_auth_set_context (session, authctx);
+	if(!smtp_auth_set_context (session, authctx))
+		goto failure;
 
 	/* At present it can't handle one recipient only out of many failing.  Make
 	 * libESMTP require all specified recipients to succeed before transferring
 	 * a message.
 	 */
-	smtp_option_require_all_recipients (session, 1);
+	if(!smtp_option_require_all_recipients (session, 1))
+		goto failure;
 
 	/* Add a message to the SMTP session. */
-	message = smtp_add_message (session);
+	if(!(message = smtp_add_message (session)))
+		goto failure;
 
 	/* Set the reverse path for the mail envelope.  (NULL is ok) */
-	smtp_set_reverse_path (message, msg->reverse_path);
+	if(!smtp_set_reverse_path (message, msg->reverse_path))
+		goto failure;
 
 	/* Open the message file and set the callback to read it. */
-	smtp_set_messagecb (message, message_cb, msg);
+	if(!smtp_set_messagecb (message, message_cb, msg))
+		goto failure;
+
+	/* DSN options */
+	if(!smtp_dsn_set_ret(message, msg->ret))
+		goto failure;
+	if(msg->envid)
+		if(!smtp_dsn_set_envid(message, msg->envid))
+			goto failure;
+	
+	/* 8bit-MIME */
+	if(!smtp_8bitmime_set_body(message, msg->body))
+		goto failure;
 
 	/* Add remaining program arguments as message recipients. */
 	list_for_each(ptr, &msg->remote_recipients)
 	{
 		recipient_t *entry = list_entry(ptr, recipient_t, list);
 		
-		if(entry->address)
-		{
-			recipient = smtp_add_recipient (message, entry->address);
-			
-			/* Recipient options set here */
-			if (msg->notify != Notify_NOTSET)
-				smtp_dsn_set_notify (recipient, msg->notify);
-		}
+		assert(entry->address);
+
+		if(!(recipient = smtp_add_recipient (message, entry->address)))
+			goto failure;
+		
+		/* Recipient options set here */
+		if (msg->notify != Notify_NOTSET)
+			if(!smtp_dsn_set_notify (recipient, msg->notify))
+				goto failure;
 	}
 
 	/* Initiate a connection to the SMTP server and transfer the message. */
@@ -397,23 +432,21 @@ void smtp_send(message_t *msg)
 		fprintf (stderr, "SMTP server problem %s\n",
 				 smtp_strerror (smtp_errno (), buf, sizeof(buf)));
 
-		ret = EX_UNAVAILABLE;
+		exit(EX_UNAVAILABLE);
 	}
-	else
-	{
-		/* Report on the success or otherwise of the mail transfer. */
-		status = smtp_message_transfer_status (message);
-		if (status->code / 100 == 2)
-			ret = EX_OK;
-		else
-		{
-			/* Report on the failure of the mail transfer. */
-			status = smtp_message_transfer_status (message);
-			fprintf (stderr, "%d %s\n", status->code, status->text);
-			smtp_enumerate_recipients (message, print_recipient_status, NULL);
 
-			ret = EX_SOFTWARE;
-		}
+
+	/* Report on the success or otherwise of the mail transfer. */
+	if(!(status = smtp_message_transfer_status (message)))
+		goto failure;
+	if (status->code / 100 != 2)
+	{
+		/* Report on the failure of the mail transfer. */
+		status = smtp_message_transfer_status (message);
+		fprintf (stderr, "%d %s\n", status->code, status->text);
+		smtp_enumerate_recipients (message, print_recipient_status, NULL);
+
+		exit(EX_SOFTWARE);
 	}
 
 	if (log_fp)
@@ -423,8 +456,17 @@ void smtp_send(message_t *msg)
 	auth_destroy_context (authctx);
 	auth_client_exit ();
 
-	if (ret != EX_OK)
-		exit(ret);
+	return;
+
+failure:
+	{
+		char buf[128];
+
+		fprintf (stderr, "%s\n",
+				 smtp_strerror (smtp_errno (), buf, sizeof(buf)));
+
+		exit(EX_SOFTWARE);
+	}
 }
 
 /*@}*/

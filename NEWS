@@ -1,26 +1,42 @@
-Version 0.4 (under development)
+News
+~~~~
 
-	* Debian packaging.
-	* Fixes to compile on FreeBSD (Tim Hemel).
-	* Local delivery via a MDA.
-	* Extraction of the recipients from the headers ('-t' option).
+  * Version 0.4 (under development):
+
+    * Debian packaging.
+
+    * Fixes to compile on FreeBSD (Tim Hemel).
+
+    * Local delivery via a MDA.
+
+    * Extraction of the recipients from the headers ('-t' option).
+
+    * 8bit-MIME extension ('-B' option).
+
+    * Further Delivery Status Notification ('-R' and '-V' options).
 
 
-Version 0.3
+  * Version 0.3:
 
-	* Capability to generate log files.
-	* Better verbose output.
-	* Minor bug fixes and documentation enhancements.
-	* Multiple identities (Jerome).
+    * Capability to generate log files.
+
+    * Better verbose output.
+
+    * Minor bug fixes and documentation enhancements.
+
+    * Multiple identities (Jerome).
 
 
-Version 0.2:
+  * Version 0.2:
 
-	* Packaging corrections.
-	* Minor bug fixes and documentation enhancements.
-	* Use sendmail exit codes.
- 
+    * Packaging corrections.
 
-Version 0.1:
+    * Minor bug fixes and documentation enhancements.
 
-	* Initial release
+    * Use sendmail exit codes.
+    
+
+  * Version 0.1:
+
+    * Initial release.
+

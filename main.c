@@ -30,29 +30,50 @@ int verbose = 0;
 FILE *log_fp = NULL;
 
 
+static void message_send(message_t *message)
+{
+	int local, remote;
+	
+	local = !list_empty(&message->local_recipients);
+	remote = !list_empty(&message->remote_recipients);
+	
+	if(remote && !local)
+		smtp_send(message);
+	else if(!remote && local)
+	{
+		local_init(message);
+		local_flush(message);
+		local_cleanup();
+	}
+	else
+	{
+		local_init(message);
+		smtp_send(message);
+		local_flush(message);
+		local_cleanup();
+	}
+}
+
 int main (int argc, char **argv)
 {
 	int c;
-	enum notify_flags notify = Notify_NOTSET;
-	char *from = NULL;
 	message_t *message;
-	int parse_headers = 0, local, remote;
+	int parse_headers = 0;
 	opmode_t mode;
 	char *rcfile = NULL;
 	
-	identities_init();
+	message = message_new();
 
 	/* Set the default mode of operation. */
-	if (strcmp(argv[0], "mailq") == 0) {
+	if (!strcmp(argv[0], "mailq")) {
 		mode = MAILQ;
-	} else if (strcmp(argv[0], "newaliases") == 0) {
+	} else if (!strcmp(argv[0], "newaliases")) {
 		mode = NEWALIAS;
 	} else {
 		mode = ENQUEUE;
 	}
 
-	while ((c = getopt (argc, argv,
-						"A:B:b:C:cd:e:F:f:Gh:IiL:M:mN:nO:o:p:q:R:r:sTtV:vX:")) != EOF)
+	while ((c = getopt (argc, argv, "A:B:b:C:cd:e:F:f:Gh:IiL:M:mN:nO:o:p:q:R:r:sTtV:vX:")) != EOF)
 		switch (c)
 		{
 			case 'A':
@@ -61,6 +82,15 @@ int main (int argc, char **argv)
 
 			case 'B':
 				/* Body type */
+				if (!strcmp (optarg, "7BIT"))
+					message->body = E8bitmime_7BIT;
+				else if (!strcmp (optarg, "8BITMIME"))
+					message->body = E8bitmime_8BITMIME;
+				else
+				{
+					fprintf (stderr, "Unsupported body type %s\n", optarg);
+					exit (EX_USAGE);
+				}
 				break;
 
 			case 'C':
@@ -91,21 +121,25 @@ int main (int argc, char **argv)
 
 			case 'N':
 				/* Delivery status notifications */
-				if (strcmp (optarg, "never") == 0)
-					notify = Notify_NEVER;
+				if (!strcmp (optarg, "never"))
+					message->notify = Notify_NEVER;
 				else
 				{
 					if (strstr (optarg, "failure"))
-						notify |= Notify_FAILURE;
+						message->notify |= Notify_FAILURE;
 					if (strstr (optarg, "delay"))
-						notify |= Notify_DELAY;
+						message->notify |= Notify_DELAY;
 					if (strstr (optarg, "success"))
-						notify |= Notify_SUCCESS;
+						message->notify |= Notify_SUCCESS;
 				}
 				break;
 
 			case 'R':
 				/* What to return */
+				if (!strcmp (optarg, "full"))
+					message->ret |= Ret_FULL;
+				if (!strcmp (optarg, "hdrs"))
+					message->ret |= Ret_HDRS;
 				break;
 
 			case 'T':
@@ -121,7 +155,7 @@ int main (int argc, char **argv)
 
 			case 'V':
 				/* Set original envelope id */
-				break;
+				message_set_envid(message, optarg);
 
 			case 'b':
 				/* Operations mode */
@@ -190,7 +224,7 @@ int main (int argc, char **argv)
 				/* From address */
 			case 'r':
 				/* Obsolete -f flag */
-				from = optarg;
+				message_set_reverse_path(message, optarg);
 				break;
 
 			case 'h':
@@ -265,6 +299,11 @@ int main (int argc, char **argv)
 
 			case 't':
 				/* Read recipients from message */
+				if(!message_parse_headers(message))
+				{
+					fprintf(stderr, "No recipients found\n");
+					exit(EX_DATAERR);
+				}
 				parse_headers = 1;
 				break;
 
@@ -287,7 +326,7 @@ int main (int argc, char **argv)
 			printf ("Mail queue is empty\n");
 		case NEWALIAS:
 		case FLUSHQ:
-			exit (0);
+			goto done;
 	}
 
 	/* At least one more argument is needed. */
@@ -297,49 +336,21 @@ int main (int argc, char **argv)
 		exit (EX_USAGE);
 	}
 
-	/* Parse the rc file. */
-	rcfile_parse(rcfile);
-
-	message = message_new();
-
-	/** Parse the envelope headers */
-	if(parse_headers)
-		if(!message_parse_headers(message))
-		{
-			fprintf(stderr, "No recipients found\n");
-			exit(EX_DATAERR);
-		}
-
-	/* Set the reverse path for the mail envelope.  */
-	if(from)
-		message_set_reverse_path (message, from);
-
 	/* Add remaining program arguments as message recipients. */
 	while (optind < argc)
 		message_add_recipient(message, argv[optind++]);
 
-	local = !list_empty(&message->local_recipients);
-	remote = !list_empty(&message->remote_recipients);
-	
-	if(remote && !local)
-		smtp_send(message);
-	else if(!remote && local)
-	{
-		local_init(message);
-		local_flush(message);
-		local_cleanup();
-	}
-	else
-	{
-		local_init(message);
-		smtp_send(message);
-		local_flush(message);
-		local_cleanup();
-	}
-	
-	message_free(message);
+	identities_init();
 
+	/* Parse the rc file. */
+	rcfile_parse(rcfile);
+
+	message_send(message);
+	
 	identities_cleanup();
+
+done:
+	message_free(message);
 
 	exit(EX_OK);
 }

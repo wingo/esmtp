@@ -49,7 +49,7 @@ Use sendmail.cf even if the operation mode indicates an initial mail
 submission.
 
 .TP
-\fB\-B\fR \fItype\fR (ignored)
+\fB\-B\fR \fItype\fR
 Set the body type to \fItype\fR.  Current legal values are 7BIT or 8BITMIME.
 
 .TP
@@ -143,7 +143,7 @@ This should be set if you are reading data from a file.
 Set the identifier used in syslog messages to the supplied \fItag\fR.
 
 .TP
-\f\-N\fR \fIdsn\fR
+\fB\-N\fR \fIdsn\fR
 Set delivery status notification conditions to \fIdsn\fR, which can be `never'
 for no notifications or a comma separated list of the values `failure' to be
 notified if delivery failed, `delay' to be notified if delivery is delayed, and
@@ -202,7 +202,7 @@ Limit processed jobs to those containing \fIsubstr\fR as a substring of the
 sender or not when \fI!\fR is specified.
 
 .TP
-\fB\-R\fR \fIreturn\fR (ignored)
+\fB\-R\fR \fIreturn\fR
 Set the amount of the message to be returned if the message bounces.  The
 \fIreturn\fR parameter can be `full' to return the entire message or `hdrs' to
 return only the headers.  In the latter case also local bounces return only the
@@ -218,7 +218,7 @@ Read message for recipients.  To:, Cc:, and Bcc: lines will be scanned for
 recipient addresses.  The Bcc: line will be deleted before transmission.
 
 .TP
-\fB\-V\fR \fIenvid\fR (ignored)
+\fB\-V\fR \fIenvid\fR
 Set the original envelope id.  
 
 .TP

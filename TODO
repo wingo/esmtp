@@ -1,1 +1,13 @@
-- add a man page for the configuration file
+To do
+~~~~~
+
+  <<esmtp>> already fullfils all my needs, and I don't plan to spend more time
+  on it besides bug-fixing and some minor feature enhancements.
+
+  Here is a list of what can still be done:
+
+  * Add a man page for the configuration file.
+
+  * Alias expansion.
+
+

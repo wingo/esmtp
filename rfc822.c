@@ -37,9 +37,9 @@
  */
 char *next_address(const char *hdr)
 {
-    static unsigned char address[BUFSIZ];
+    static char address[BUFSIZ];
     static int tp;
-    static const unsigned char *hp;
+    static const char *hp;
     static int	state, oldstate;
     int parendepth = 0;
 
@@ -68,14 +68,14 @@ char *next_address(const char *hdr)
 		tp = 0;
 		return (address);
 	    }
-	    return((unsigned char *)NULL);
+	    return(NULL);
 	}
 	else if (*hp == '\\')		/* handle RFC822 escaping */
 	{
 	    if (state != INSIDE_PARENS)
 	    {
 		address[NEXTTP()] = *hp++;	/* take the escape */
-		address[NEXTTP()] = *hp;	/* take following unsigned char */
+		address[NEXTTP()] = *hp;	/* take following char */
 	    }
 	}
 	else switch (state)

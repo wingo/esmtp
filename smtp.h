@@ -22,12 +22,22 @@
  */
 typedef struct {
 	struct list_head list;
-	char *address;
-	char *host;
+	
+	char *address;	/**< reverse path address */
+
+	char *host;	/**< hostname and service (port) */
+
+	/** \name Auth Extension */
+	/*@{*/
 	char *user;
 	char *pass;
-	enum starttls_option starttls;	/**< it should default to Starttls_DISABLED */
+	/*@}*/
+
+	/** \name StartTLS Extension */
+	/*@{*/
+	enum starttls_option starttls;
 	char *certificate_passphrase;
+	/*@}*/
 } identity_t;
 
 /** 

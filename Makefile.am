@@ -19,7 +19,7 @@ esmtp_SOURCES = \
 	smtp.h \
 	xmalloc.h
 
-EXTRA_DIST = README.mutt sample.esmtprc
+EXTRA_DIST = sample.esmtprc
 
 AM_YFLAGS = -d
 

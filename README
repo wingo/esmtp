@@ -1,6 +1,237 @@
-ESMTP is a user configurable relay-only Mail Transfer Agent (MTA) with a
-sendmail-compatible syntax. It's based on libESMTP supporting the AUTH
-(including the CRAM-MD5 and NTLM SASL mechanisms) and the StartTLS SMTP
-extensions.
+                                     -----
+                                     ESMTP
+                                     -----
+                                  José Fonseca
+                                      ---
+                                   July 2003
+                                     
 
-See ESMTP home page http://esmtp.sourceforge.net/ for more information.
+Introduction
+~~~~~~~~~~~~
+
+  <<esmtp>> is a user configurable relay-only Mail Transfer Agent (MTA) with a
+  <<sendmail>> compatible syntax.  It's based on <<libESMTP>> supporting the
+  AUTH (including the CRAM-MD5 and NTLM SASL mechanisms) and the StartTLS SMTP
+  extensions.
+
+  See the {{{http://esmtp.sourceforge.net/}ESMTP home page}} for updated
+  information.
+
+
+Rationale
+~~~~~~~~~
+
+  Since the moment I switched to Linux I had some problems to have email
+  properly configurated to my personal needs.  I use a POP3/SMTP mail account
+  for my personal mail, and I usually connect to the internet with my laptop
+  via several LANs (home, work, ...) with several different firewall
+  configurations. The standard MTAs didn't provided the flexibility I needed --
+  they either failed to deliver the mail directly or failed to authenticate
+  with the relay, or were configured system-wide and conflicted with the local
+  MTA.
+  
+  <<fetchmail>> always worked fine to get email, but I needed a <<sendmail>>
+  alike program to send email from <<Mutt>>.  Basically I wanted a program
+  which could be for SMTP what <<fetchmail>> was for POP3, i.e., an user
+  configurable MTA with authorization support.
+
+  Some small modifications to the <<<mail-file>>> example from <<libESMTP>> did
+  the trick.  After receiving positive feedback from the <<libESMTP>> author,
+  Brian Stafford, I decided to make the program more confortable for others to
+  use -- adding a command-line option parser extracted from sendmail, a
+  configuration file parser from <<fetchmail>>, a man page based on <<ssmtp>>
+  and <<sendmail>> man pages and using autotools to wrap it all up.  The result
+  of this cut and paste effort is <<esmtp>>.  Well, the first version, that is.
+  Since then a few more bells and whistles were added, with the help of some
+  contributors.
+
+
+
+Configuration
+~~~~~~~~~~~~~
+
+
+* Sample configuration file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  This is a simple configuration file for a quick start:
+
+--------------------------------------
+hostname = mail.myisp.com:25
+username = "myusername"
+password = "mysecret"
+starttls = enabled
+
+identity = myself@somewhere.com
+        hostname = smtp.somewhere.com:25
+        username = "myself"
+        password = "secret"
+        starttls = enabled
+
+mda "/usr/bin/procmail -d %T"
+--------------------------------------
+
+
+* Configuration options
+~~~~~~~~~~~~~~~~~~~~~~~
+
+  Options are speficied by giving a <keyword=value> in the configuration
+  file.  The equal sign is optional and can be replaced by whitespace.  The
+  value may be enclose in simple or double quotes, in which case special
+  characters can be escaped as in normal <C> strings.
+
+  [hostname] - set SMTP host and service (port).
+  
+    This is specified in the format <<<host.example.org[:service]>>> with no
+    whitespace surrounding the colon if service is specified. service may be a
+    name from <<</etc/services>>> or a decimal port number.  If not specified
+    the port defaults to 587.
+   
+    Note (from <<libESMTP>> documentation): the default port number is set to
+    587 since this is the port that should be used for mail submission, see RFC
+    2476.  By choosing this default now, the API does not change behaviour
+    unexpectedly in the future as use of the new standard becomes commonplace.
+    The hostport notation simplifies things for the application, the user can
+    type <<<localhost:smtp>>> or <<<localhost:25>>> where the application
+    expects a host name.
+
+  [username] - set the user name.
+
+  [password] - set the password.
+
+  [starttls] - determine the usage of the StartTLS extension.
+  
+    It can be one of <"enabled">, <"disabled"> or <"required">. It defaults to
+    disabled.
+
+  [certificate_passphrase] - set the certificate passphrase.
+
+  [identity] - define an identity.
+
+    An identities is a set of options associated with a given address.  For
+    example:
+
+--------------------------------------
+identity = myself@somewhere.com
+        hostname = smtp.somewhere.com:25
+        username = "myself"
+        password = "secret"
+--------------------------------------
+
+    Identities are be selected by the address specified in the <-f> flag.  You
+    can have as many you like.
+
+    The options up to the first <identity> option constitute the default
+    identity.
+
+
+    Note: the default identity settings are not shared by the other identities.
+    Everything (username, password, etc.) must be specified for every identity
+    even if they don't differ from the default identity.
+
+  [mda] - set the Mail Delivery Agent (MDA).
+   
+    Local delivery addresses will be inserted into the MDA command wherever you
+    place a <%T>. The mail message's From address will be inserted where you
+    place an <%F>.
+
+    Some common MDAs are <"/usr/bin/procmail -d %T">,
+    <"/usr/bin/deliver"> and <"/usr/lib/mail.local %T">.
+
+    See below for more information about using <<esmtp>> with an MDA.
+
+
+Invocation
+~~~~~~~~~~
+
+  <<esmtp>> is command line compatible with <<sendmail>>.
+
+  See the <<esmtp>> man page for information on how to invoke it.
+
+
+Interfacing to Mail User Agents
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Most Mail User Agents (MUAs) will work without need to configuration provided
+  that you install a symbolic from <<</usr/sbin/sendmail>>> to the esmtp
+  executable.  This should already be taken care of by the <install> target of
+  the makefile when building from source.
+
+  If by any reason it is not possible to have (such as no administrator
+  priviledges or the use of another MTA for local delivery) then you will have
+  to reconfigure your MUA to use the esmtp executable instead.
+
+
+* Mutt
+~~~~~~
+
+  If not using a symbolic link to the esmtp executable you can make <<Mutt>> use
+  <<esmtp>> by adding the following line to your <<<~/.muttrc>>>:
+
+-----------------------------
+set sendmail="/path/to/esmtp"
+-----------------------------
+
+  <<Esmtp>> supports <<sendmail>> envelope sender <-f> flag, and you are
+  advised to always enable it by adding the following line to <<Mutt>>
+  configuration file:
+
+---------------------
+set envelope_from=yes
+---------------------
+
+  For debugging purposes you may prefer to put in your <<<~/.muttrc>>>:
+
+--------------------------------------------------
+set sendmail="/path/to/esmtp -v -X /tmp/esmtp.log"
+--------------------------------------------------
+    
+  This will enable verbose output and logging of the traffic with the SMTP
+  server.
+
+
+Interfacing to Mail Delivery Agents
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  <<esmtp>> relies upon a Mail Delivery Agent (MDA) for local mail delivery, so
+  you need one if you want to avoid having another MTA for local delivery.  
+  
+  Notice that at the moment <<esmtp>> does not honor mail aliases or
+  <<<.forward>>> files.
+
+  To deliver to other users beside yourself, the MDA must be installed with
+  <setuid> flag -- which is done by default in most Linux distributions.
+
+
+* Procmail
+~~~~~~~~~~
+
+  To use <<procmail>> with <<esmtp>> set the <<<mda>>> configuration value to:
+
+-----------------------------
+mda="/usr/bin/procmail -d %T"
+-----------------------------
+
+
+Interfacing with other mail applications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+* Fetchmail
+~~~~~~~~~~~
+
+  By default <<fetchmail>> delivers messages via SMTP to port 25 on the machine
+  it is running.  Because <<esmtp>> has no SMTP server if you are not using another 
+  MTA for local delivery then you will need to configure <<fetchmail>> to use 
+  <<esmtp>> executable.  This is acomplished by adding the following lines to the top
+  of your <<<~/.fetchmailrc>>>:
+
+-------------------------------------
+defaults
+        mda "/path/to/esmtp -f %F %T"
+-------------------------------------
+
+  Since <<esmtp>> simply forwards the mail to another MDA you can avoid this
+  redundant step by simply replacing the value inside the quotes above by
+  whichever value you use on your <<<~/.esmtprc>>>.
+

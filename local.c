@@ -4,11 +4,11 @@
  */
 
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
-#include <pwd.h>
 
 #include "local.h"
 #include "main.h"
@@ -45,7 +45,6 @@ void local_init(message_t *message)
 	struct		idlist *idp;
 	int		length = 0, fromlen = 0, nameslen = 0;
 	char		*names = NULL, *before, *after, *from = NULL;
-	char *user = NULL;
 
 	if (!mda)
 	{
@@ -70,8 +69,9 @@ void local_init(message_t *message)
 		{
 			recipient_t *recipient = list_entry(ptr, recipient_t, list);
 			
-			if(recipient->address)
-				nameslen += (strlen(recipient->address) + 1);	/* string + ' ' */
+			assert(recipient->address);
+			
+			nameslen += (strlen(recipient->address) + 1);	/* string + ' ' */
 		}
 
 		names = (char *)xmalloc(nameslen + 1);		/* account for '\0' */
@@ -80,13 +80,8 @@ void local_init(message_t *message)
 		{
 			recipient_t *recipient = list_entry(ptr, recipient_t, list);
 			
-			if(recipient->address)
-			{
-				if(!user)
-					user = recipient->address;
-				strcat(names, recipient->address);
-				strcat(names, " ");
-			}
+			strcat(names, recipient->address);
+			strcat(names, " ");
 		}
 		names[--nameslen] = '\0';		/* chop trailing space */
 

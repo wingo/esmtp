@@ -28,7 +28,9 @@ message_t *message_new(void)
 	INIT_LIST_HEAD(&message->remote_recipients);
 	INIT_LIST_HEAD(&message->local_recipients);
 	
+	message->ret = Ret_NOTSET;
 	message->notify = Notify_NOTSET;
+	message->body = E8bitmime_NOTSET;
 		
 	return message;
 }
@@ -47,8 +49,9 @@ void message_free(message_t *message)
 			recipient = list_entry(ptr, recipient_t, list);
 			list_del(ptr);
 			
-			if(recipient->address)
-				free(recipient->address);
+			assert(recipient->address);
+			
+			free(recipient->address);
 					
 			free(ptr);
 		}
@@ -59,11 +62,15 @@ void message_free(message_t *message)
 			recipient = list_entry(ptr, recipient_t, list);
 			list_del(ptr);
 			
-			if(recipient->address)
-				free(recipient->address);
+			assert(recipient->address);
+			
+			free(recipient->address);
 					
 			free(ptr);
 		}
+
+	if(message->envid)
+		free(message->envid);
 
 	if(message->fp)
 		fclose(message->fp);
@@ -79,18 +86,29 @@ void message_set_reverse_path(message_t *message, const char *address)
 	message->reverse_path = xstrdup(address);
 }
 
+void message_set_envid(message_t *message, const char *address)
+{
+	if(message->envid)
+		free(message->envid);
+
+	message->envid = xstrdup(address);
+}
+
 void message_add_recipient(message_t *message, const char *address)
 {
 	recipient_t *recipient;
 
-	recipient = (recipient_t *)xmalloc(sizeof(recipient_t));
+	if(address)
+	{
+		recipient = (recipient_t *)xmalloc(sizeof(recipient_t));
 
-	recipient->address = xstrdup(address);
+		recipient->address = xstrdup(address);
 
-	if(local_address(address))
-		list_add(&recipient->list, &message->local_recipients);
-	else
-		list_add(&recipient->list, &message->remote_recipients);
+		if(local_address(address))
+			list_add(&recipient->list, &message->local_recipients);
+		else
+			list_add(&recipient->list, &message->remote_recipients);
+	}
 }
 
 static void message_buffer_alloc(message_t *message)
@@ -305,8 +323,7 @@ static unsigned message_parse_header(message_t *message, size_t start, size_t st
 
 unsigned message_parse_headers(message_t *message)
 {
-	FILE *fp = message->fp ? message->fp : stdin;
-	char *line, *header;
+	char *line;
 	size_t start, stop;
 	unsigned count = 0;
 
