@@ -19,6 +19,16 @@ AC_PROG_LN_S
 AC_PROG_YACC
 
 dnl Check for libESMTP
+AC_ARG_WITH(libesmtp,
+	    AC_HELP_STRING([--with-libesmtp=DIR],
+			   [use libesmtp library from (prefix) directory DIR]),
+	    ,)
+if test "$with_libesmtp" != "no" -a "$with_libesmtp" != "yes"
+then
+	CPPFLAGS="$CPPFLAGS -I$with_libesmtp/include"
+	LDFLAGS="$LDFLAGS -L$with_libesmtp/lib"
+	AC_CHECK_HEADER(libesmtp.h, ,[AC_MSG_ERROR([libesmtp.h not found in $with_libesmtp])])
+fi    
 AC_MSG_CHECKING(for libESMTP)
 if libesmtp-config --version > /dev/null 2>&1
 then
