@@ -379,21 +379,15 @@ The Bcc: line will be deleted before transmission.
 .BI "\-V " envid
 (ignored)
 Set the original envelope id.  
-This is propagated across SMTP to servers that support DSNs 
-and is returned in DSN-compliant error messages.
 
 .TP
 .B \-v
 Go into verbose mode.  
-Alias expansions will be announced, etc.
 
 .TP
 .BI "\-X " logfile
 (ignored)
 Log all traffic in and out of mailers in the indicated log file.
-This should only be used as a last resort 
-for debugging mailer bugs.  
-It will log a lot of data very quickly.
 
 .TP
 .B \-\-
@@ -401,7 +395,7 @@ Stop processing command flags and use the rest of the arguments as
 addresses.
 .SH FILES
 .TP
- ~/.esmtp
+ ~/.esmtprc
 configuration file
 
 .SH SEE ALSO
@@ -410,8 +404,9 @@ fetchmail(1)
 .SH DIAGNOSTICS
 
 .SH AUTHORS
-José Fonseca (j_r_fonseca@yahoo.co.uk)
-Brian Stafford (brian@stafford.uklinux.net)
+José Fonseca
+.PP
+Brian Stafford
 
 .SH BUGS
 .B esmtp
