@@ -1,6 +1,6 @@
 bin_PROGRAMS = esmtp
 
-man_MANS = esmtp.1
+dist_man_MANS = esmtp.1
 
 esmtp_SOURCES = main.c parser.y lexer.l
 
