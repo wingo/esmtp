@@ -1,6 +1,7 @@
-Version 0.4
+Version 0.4 (under development)
 
 	* Debian packaging.
+	* Fixes to compile on FreeBSD (Tim Hemel).
 
 
 Version 0.3
@@ -8,7 +9,7 @@ Version 0.3
 	* Capability to generate log files.
 	* Better verbose output.
 	* Minor bug fixes and documentation enhancements.
-	* Multiple identities.
+	* Multiple identities (Jerome).
 
 
 Version 0.2:

@@ -11,319 +11,219 @@
 
 .SH NAME
 esmtp
-
-.SH SUMMARY
+\-
 libESMTP to Sendmail compatibility interface
 
 .SH SYNOPSIS
-.B esmtp
-.RI "[ " flags " ] [ " address " "  ... " ]"
-.br
+\fBesmtp\fR [\fIflags\fR] [\fIaddress ...\fR]
 
 .SH DESCRIPTION
-.B Esmtp
-is a send-only 
-.B sendmail
-emulator for machines which normally retrieve their mail
-up from a centralized mailhub
-using programs such as
-.B fetchmail .
-.PP
-.B Esmtp
-does not attempt to provide all the functionality of 
-.B sendmail
-: it is intended to be used by other 
-mail user agents as 
-.B mutt .
+\fBEsmtp\fR is a send-only \fBsendmail\fR emulator for machines which normally
+retrieve their mail up from a centralized mailhub using programs such as
+\fBfetchmail\fR.
+
+\fBEsmtp\fR does not attempt to provide all the functionality of
+\fBsendmail\fR: it is intended to be used by other mail user agents as
+\fBmutt\fR.
 
 .SH OPTIONS
-Most 
-.B sendmail
-options are irrelevent to 
-.B esmtp .
-Those marked ``ignored'' or ``default'' have no effect on mail transfer. 
-Those marked ``unsupported'' are fatal errors.
+Most \fBsendmail\fR options are irrelevent to \fBesmtp\fR .  Those marked
+``ignored'' or ``default'' have no effect on mail transfer.  Those marked
+``unsupported'' are fatal errors.
 
 .TP
-.B \-Ac
-(ignored)
-Use submit.cf even if the operation mode does not indicate
-an initial mail submission.
+\fB\-Ac\fR (ignored)
+Use submit.cf even if the operation mode does not indicate an initial mail
+submission.
 
 .TP
-.B \-Am
-(ignored)
-Use sendmail.cf even if the operation mode indicates
-an initial mail submission.
+\fB\-Am\fR (ignored)
+Use sendmail.cf even if the operation mode indicates an initial mail
+submission.
 
 .TP
-.BI \-B type
-(ignored)
-Set the body type to
-.IR type .
-Current legal values are 
-7BIT 
-or  
-8BITMIME.
+\fB\-B\fR \fItype\fR (ignored)
+Set the body type to \fItype\fR.  Current legal values are 7BIT or 8BITMIME.
 
 .TP
-.B \-ba
-(unsupported)
-Go into 
-ARPANET 
-mode.
+\fB\-ba\fR (unsupported)
+Go into ARPANET mode.
 
 .TP
-.B \-bd
-(unsupported)
+\fB\-bd\fR (unsupported)
 Run as a daemon.
 
 .TP
-.B \-bD
-(unsupported)
-Same as
-.B \-bd
-except runs in foreground.
+\fB\-bD\fR (unsupported)
+Same as \fB\-bd\fR except runs in foreground.
 
 .TP
-.B \-bh
-(unsupported)
+\fB\-bh\fR (unsupported)
 Print the persistent host status database.
 
 .TP
-.B \-bH
-(unsupported)
+\fB\-bH\fR (unsupported)
 Purge expired entries from the persistent host status database.
 
 .TP
-.B \-bi
-(ignored)
+\fB\-bi\fR (ignored)
 Initialize the alias database.
 
 .TP
-.B \-bm
-(default)
+\fB\-bm\fR (default)
 Deliver mail in the usual way.
 
 .TP
-.B \-bp
-(unsupported)
+\fB\-bp\fR (unsupported)
 Print a listing of the queue(s).
 
 .TP
-.B \-bP
-(unsupported)
-Print number of entries in the queue(s);
-only available with shared memory support.
+\fB\-bP\fR (unsupported)
+Print number of entries in the queue(s); only available with shared memory
+support.
 
 .TP
-.B \-bs
-(unsupported)
-Use the 
-SMTP 
-protocol as described in 
-RFC821 
-on standard input and output.  
+\fB\-bs\fR (unsupported)
+Use the SMTP protocol as described in RFC821 on standard input and output.  
 
 .TP
-.B \-bt
-(unsupported)
+\fB\-bt\fR (unsupported)
 Run in address test mode.  
 
 .TP
-.B \-bv
-(unsupported)
+\fB\-bv\fR (unsupported)
 Verify names only \- do not try to collect or deliver a message.
 
 .TP
-.BI \-C file
+\fB\-C\fR \fIfile\fR
 Use alternate configuration file.
 
 .TP
-.BI \-d X
-(ignored)
+\fB\-d\fR \fIX\fR (ignored)
 Set debugging value to
-.IR X .
-.ne 1i
+\fIX\fR.
 
 .TP
-.BI \-F fullname
+\fB\-F\fR \fIfullname\fR
 Set the full name of the sender.
 
 .TP
-.BI \-f name
-Sets the name of the ``from'' person 
-(i.e., the envelope sender of the mail).
-This address may also be used in the From: header
-if that header is missing during initial submission.
-The envelope sender address is used as the recipient
-for delivery status notifications
-and may also appear in a Return-Path: header.
-.PP
+\fB\-f\fR \fIname\fR
+Sets the name of the ``from'' person (i.e., the envelope sender of the mail).
+This address may also be used in the From: header if that header is missing
+during initial submission.  The envelope sender address is used as the
+recipient for delivery status notifications and may also appear in a
+Return-Path: header.
+
 This address is also used to select from different identities in the
 configuration file.
 
 .TP
-.BI \-G
-(ignored)
+\fB\-G\fR (ignored)
 Relay (gateway) submission of a message.
 
 .TP
-.BI \-h N
-(ignored)
-Set the hop count to
-.IR N .
+\fB\-h\fR \fIN\fR (ignored)
+Set the hop count to \fIN\fR.
 
 .TP
-.B \-i
-(ignored)
+\fB\-i\fR (ignored)
 Ignore dots alone on lines by themselves in incoming messages.
 This should be set if you are reading data from a file.
 
 .TP
-.BI "\-L " tag
-(ignored)
-Set the identifier used in syslog messages to the supplied
-.IR tag .
+\fB\-L\fR \fItag\fR (ignored)
+Set the identifier used in syslog messages to the supplied \fItag\fR.
 
 .TP
-.BI "\-N " dsn
-Set delivery status notification conditions to
-.IR dsn ,
-which can be 
-`never' 
-for no notifications 
-or a comma separated list of the values 
-`failure' 
-to be notified if delivery failed, 
-`delay'
-to be notified if delivery is delayed, and 
-`success' 
-to be notified when the message is successfully delivered.
+\f\-N\fR \fIdsn\fR
+Set delivery status notification conditions to \fIdsn\fR, which can be `never'
+for no notifications or a comma separated list of the values `failure' to be
+notified if delivery failed, `delay' to be notified if delivery is delayed, and
+`success' to be notified when the message is successfully delivered.
 
 .TP
-.B \-n
-(default)
+\fB\-n\fR (default)
 Don't do aliasing.
 
 .TP
-\fB\-O\fP \fIoption\fR=\fIvalue\fR 
-(ignored)
-Set option
-.I option
-to the specified
-.IR value .
-This form uses long names.
+\fB\-O\fP \fIoption\fR=\fIvalue\fR (ignored)
+Set option \fIoption\fR to the specified \fIvalue\fR.  This form uses long
+names.
 
 .TP
-.BI \-o "x value"
-(ignored)
-Set option
-.I x
-to the specified
-.IR value .
-This form uses single character names only.  
+\fB\-o\fR \fIx value\fR (ignored)
+Set option \fIx\fR to the specified \fIvalue\fR.  This form uses single
+character names only.  
 
 .TP
-.BI \-p protocol
-(ignored)
+\fB\-p\fR \fIprotocol\fR (ignored)
 Set the name of the protocol used to receive the message.  
 
 .TP
-\fB\-q\fR[\fItime\fR] 
-(ignored)
+\fB\-q\fR[\fItime\fR] (ignored)
 Process saved messages in the queue at given intervals.  
 
 .TP
-\fB\-qp\fR[\fItime\fR] 
-(ignored)
-Similar to \fB\-q\fItime\fR,
-except that instead of periodically forking a child to process the queue,
-sendmail forks a single persistent child for each queue
-that alternates between processing the queue and sleeping.
+\fB\-qp\fR[\fItime\fR] (ignored)
+Similar to \fB\-q\fItime\fR, except that instead of periodically forking a
+child to process the queue, forks a single persistent child for each queue that
+alternates between processing the queue and sleeping.
 
 .TP
-\fB\-q\fRf
-(ignored)
-Process saved messages in the queue once and do not fork(),
-but run in the foreground.
+\fB\-qf\fR (ignored)
+Process saved messages in the queue once and do not fork(), but run in the
+foreground.
 
 .TP
-\fB\-q\fRG name
-(ignored)
-Process jobs in queue group called
-.I name
-only.
+\fB\-qG\fR \fIname\fR (ignored)
+Process jobs in queue group called \fIname\fR only.
 
 .TP
-\fB\-q\fR[\fI!\fR]I substr
-(ignored)
-Limit processed jobs to those containing
-.I substr
-as a substring of the queue id or not when
-.I !
-is specified.
+\fB\-q\fR[\fI!\fR]\fBI\fR \fIsubstr\fR (ignored)
+Limit processed jobs to those containing \fIsubstr\fR as a substring of the
+queue id or not when \fI!\fR is specified.
 
 .TP
-\fB\-q\fR[\fI!\fR]R substr
-(ignored)
-Limit processed jobs to those containing
-.I substr
-as a substring of one of the recipients or not when
-.I !
-is specified.
+\fB\-q\fR[\fI!\fR]\fBR\fR \fIsubstr\fR (ignored)
+Limit processed jobs to those containing \fIsubstr\fR as a substring of one of
+the recipients or not when \fI!\fR is specified.
 
 .TP
-\fB\-q\fR[\fI!\fR]S substr
-(ignored)
-Limit processed jobs to those containing
-.I substr
-as a substring of the sender or not when
-.I !
-is specified.
+\fB\-q\fR[\fI!\fR]\fBS\fR \fIsubstr\fR (ignored)
+Limit processed jobs to those containing \fIsubstr\fR as a substring of the
+sender or not when \fI!\fR is specified.
 
 .TP
-.BI "\-R " return
-(ignored)
-Set the amount of the message to be returned 
-if the message bounces.
-The
-.I return
-parameter can be 
-`full' 
-to return the entire message or 
-`hdrs' 
-to return only the headers.  
-In the latter case also local bounces return only the headers.
+\fB\-R\fR \fIreturn\fR (ignored)
+Set the amount of the message to be returned if the message bounces.  The
+\fIreturn\fR parameter can be `full' to return the entire message or `hdrs' to
+return only the headers.  In the latter case also local bounces return only the
+headers.
 
 .TP
-.BI \-r name
-An alternate and obsolete form of the
-.B \-f
-flag.
+\fB\-r\fR \fIname\fR
+An alternate and obsolete form of the \fB\-f\fR flag.
 
 .TP
-.B \-t
-(unsupported)
-Read message for recipients.  
-To:, Cc:, and Bcc: lines will be scanned for recipient addresses.  
-The Bcc: line will be deleted before transmission.
+\fB\-t\fR (unsupported)
+Read message for recipients.  To:, Cc:, and Bcc: lines will be scanned for
+recipient addresses.  The Bcc: line will be deleted before transmission.
 
 .TP
-.BI "\-V " envid
-(ignored)
+\fB\-V\fR \fIenvid\fR (ignored)
 Set the original envelope id.  
 
 .TP
-.B \-v
+\fB\-v\fR
 Go into verbose mode.  
 
 .TP
-.BI "\-X " logfile
+\fB\-X\fR \fIlogfile\fR
 Log all traffic in and out of mailers in the indicated log file.
 
 .TP
-.B \-\-
+\fB\-\-\fR
 Stop processing command flags and use the rest of the arguments as
 addresses.
 
@@ -333,9 +233,8 @@ addresses.
 configuration file
 
 .SH SEE ALSO
+sendmail(1),
 fetchmail(1)
-
-.SH DIAGNOSTICS
 
 .SH AUTHORS
 José Fonseca
