@@ -8,14 +8,18 @@
 .\"     Copyright (c) 1988, 1991, 1993
 .\"         The Regents of the University of California.  All rights reserved.
 .TH ESMTP 1
+
 .SH NAME
 esmtp
+
 .SH SUMMARY
 libESMTP to Sendmail compatibility interface
+
 .SH SYNOPSIS
 .B esmtp
 .RI "[ " flags " ] [ " address " "  ... " ]"
 .br
+
 .SH DESCRIPTION
 .B Esmtp
 is a send-only 
@@ -23,27 +27,22 @@ is a send-only
 emulator for machines which normally retrieve their mail
 up from a centralized mailhub
 using programs such as
-.B fetchmail
-.
+.B fetchmail .
 .PP
 .B Esmtp
 does not attempt to provide all the functionality of 
 .B sendmail
 : it is intended to be used by other 
 mail user agents as 
-.B mutt
-.
+.B mutt .
 
 .SH OPTIONS
 Most 
 .B sendmail
 options are irrelevent to 
-.B esmtp
-. Those marked ``ignored'' or
-``default'' have no effect on mail transfer.  Those marked ``unsupported''
-are fatal errors.  Those marked ``simulated'' are not errors, but the result
-is for the program to exit with an informative message. A sort of fatal
-non-error.
+.B esmtp .
+Those marked ``ignored'' or ``default'' have no effect on mail transfer. 
+Those marked ``unsupported'' are fatal errors.
 
 .TP
 .B \-Ac
@@ -69,35 +68,31 @@ or
 
 .TP
 .B \-ba
-(ignored)
+(unsupported)
 Go into 
 ARPANET 
-mode.  All input lines must end with a CR-LF, 
-and all messages will be generated with a CR-LF at the end.  
-Also, 
-the ``From:'' and ``Sender:'' 
-fields are examined for the name of the sender.
+mode.
 
 .TP
 .B \-bd
-(ignored)
+(unsupported)
 Run as a daemon.
 
 .TP
 .B \-bD
-(ignored)
+(unsupported)
 Same as
 .B \-bd
 except runs in foreground.
 
 .TP
 .B \-bh
-(ignored)
+(unsupported)
 Print the persistent host status database.
 
 .TP
 .B \-bH
-(ignored)
+(unsupported)
 Purge expired entries from the persistent host status database.
 
 .TP
@@ -107,41 +102,37 @@ Initialize the alias database.
 
 .TP
 .B \-bm
-(ignored)
-Deliver mail in the usual way (default).
+(default)
+Deliver mail in the usual way.
 
 .TP
 .B \-bp
-(ignored)
+(unsupported)
 Print a listing of the queue(s).
 
 .TP
 .B \-bP
-(ignored)
+(unsupported)
 Print number of entries in the queue(s);
 only available with shared memory support.
 
 .TP
 .B \-bs
-(ignored)
+(unsupported)
 Use the 
 SMTP 
 protocol as described in 
 RFC821 
 on standard input and output.  
-This flag implies all the operations of the
-.B \-ba
-flag that are compatible with 
-SMTP.
 
 .TP
 .B \-bt
-(ignored)
+(unsupported)
 Run in address test mode.  
 
 .TP
 .B \-bv
-(ignored)
+(unsupported)
 Verify names only \- do not try to collect or deliver a message.
 
 .TP
@@ -169,40 +160,17 @@ if that header is missing during initial submission.
 The envelope sender address is used as the recipient
 for delivery status notifications
 and may also appear in a Return-Path: header.
-.B \-f
-should only be used 
-by ``trusted'' users 
-(normally
-.IR root ", " daemon ,
-and
-.IR network )
-or if the person you are trying to become 
-is the same as the person you are.
-Otherwise,
-an X-Authentication-Warning header
-will be added to the message.
 
 .TP
 .BI \-G
 (ignored)
-Relay (gateway) submission of a message,
-e.g., when
-.BR rmail
-calls
-.B sendmail .
+Relay (gateway) submission of a message.
 
 .TP
 .BI \-h N
 (ignored)
 Set the hop count to
 .IR N .
-The hop count is incremented every time the mail is 
-processed.
-When it reaches a limit, 
-the mail is returned with an error message,
-the victim of an aliasing loop.  
-If not specified, 
-``Received:'' lines in the message are counted.
 
 .TP
 .B \-i
@@ -233,7 +201,7 @@ to be notified when the message is successfully delivered.
 
 .TP
 .B \-n
-(ignored)
+(default)
 Don't do aliasing.
 
 .TP
@@ -243,7 +211,7 @@ Set option
 .I option
 to the specified
 .IR value .
-This form uses long names.  See below for more details.
+This form uses long names.
 
 .TP
 .BI \-o "x value"
@@ -253,49 +221,16 @@ Set option
 to the specified
 .IR value .
 This form uses single character names only.  
-The short names are not described in this manual page; 
-see the
-.I "Sendmail Installation and Operation Guide"
-for details.
 
 .TP
 .BI \-p protocol
 (ignored)
 Set the name of the protocol used to receive the message.  
-This can be a simple protocol name such as ``UUCP'' 
-or a protocol and hostname, such as ``UUCP:ucbvax''.
 
 .TP
 \fB\-q\fR[\fItime\fR] 
 (ignored)
 Process saved messages in the queue at given intervals.  
-If
-.I time
-is omitted, process the queue once.
-.I Time
-is given as a tagged number, 
-with 
-`s' 
-being seconds, 
-`m' 
-being minutes (default), 
-`h' 
-being hours, 
-`d' 
-being days, 
-and 
-`w' 
-being weeks.
-For example, 
-`\-q1h30m' 
-or 
-`\-q90m' 
-would both set the timeout to one hour thirty minutes.
-By default,
-.B sendmail
-will run in the background.
-This option can be used safely with
-.BR \-bd .
 
 .TP
 \fB\-qp\fR[\fItime\fR] 
@@ -304,9 +239,6 @@ Similar to \fB\-q\fItime\fR,
 except that instead of periodically forking a child to process the queue,
 sendmail forks a single persistent child for each queue
 that alternates between processing the queue and sleeping.
-The sleep time is given as the argument; it defaults to 1 second.
-The process will always sleep at least 5 seconds if the queue was
-empty in the previous queue run.
 
 .TP
 \fB\-q\fRf
@@ -393,6 +325,7 @@ Log all traffic in and out of mailers in the indicated log file.
 .B \-\-
 Stop processing command flags and use the rest of the arguments as
 addresses.
+
 .SH FILES
 .TP
  ~/.esmtprc

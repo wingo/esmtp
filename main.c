@@ -266,6 +266,47 @@ main (int argc, char **argv)
 
       case 'b':
 	/* Operations mode */
+	c = (optarg == NULL) ? ' ' : *optarg;
+	switch (c)
+	  {
+	    case 'm':
+	      /* Deliver mail in the usual way */
+	      break;
+
+	    case 'i':
+	      /* Initialize the alias database */
+	      break;
+
+	    case 'a':
+	      /* Go into ARPANET mode */
+	    case 'd':
+	      /* Run as a daemon */
+	    case 'D':
+	      /* Run as a daemon in foreground */
+	    case 'h':
+	      /* Print the persistent host status database */
+	    case 'h':
+	      /* Purge expired entries from the persistent host status database */
+	    case 'p':
+	      /* Print a listing of the queue(s) */
+	    case 'P':
+	      /* Print number of entries in the queue(s) */
+	    case 's':
+	      /* Use the SMTP protocol as described in RFC821 
+	       * on standard input and output */
+	    case 't':
+	      /* Run in address test mode */
+	    case 'v':
+	      /* Verify names only */
+	      fprintf (stderr, "Unsupported operation mode %c\n", c);
+	      exit (64);
+	      break;
+
+	    default:
+	      fprintf (stderr, "Invalid operation mode %c\n", c);
+	      exit (64);
+	      break;
+	  }
         break;
 
       case 'c':
@@ -348,6 +389,8 @@ main (int argc, char **argv)
 	      ++optarg;
 
 	    default:
+	      fprintf (stderr, "Invalid -q value\n");
+	      exit (64);
 	      break;
 	  }
 	break;
@@ -359,7 +402,7 @@ main (int argc, char **argv)
       case 't':
 	/* Read recipients from message */
 	fprintf (stderr, "Unsupported option 't'\n");
-	exit (2);
+	exit (64);
         break;
 
       case 'v':
@@ -369,7 +412,7 @@ main (int argc, char **argv)
 	
       default:
         usage ();
-        exit (2);
+        exit (64);
       }
 
   /* At least one more argument is needed.
@@ -377,7 +420,7 @@ main (int argc, char **argv)
   if (optind > argc - 1)
     {
       usage ();
-      exit (2);
+      exit (64);
     }
 
   /* NB.  libESMTP sets timeouts as it progresses through the protocol.
@@ -449,7 +492,7 @@ main (int argc, char **argv)
       fprintf (stderr, "SMTP server problem %s\n",
 	       smtp_strerror (smtp_errno (), buf, sizeof buf));
       
-      ret = 1;
+      ret = 69;
     }
   else
     {
@@ -468,7 +511,7 @@ main (int argc, char **argv)
 	  fprintf (stderr, "%d %s\n", status->code, status->text);
 	  smtp_enumerate_recipients (message, print_recipient_status, NULL);
 	  
-	  ret = 1;
+	  ret = 70;
 	}
     }
   
