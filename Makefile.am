@@ -2,7 +2,22 @@ bin_PROGRAMS = esmtp
 
 dist_man_MANS = esmtp.1
 
-esmtp_SOURCES = main.h main.c parser.y lexer.l list.h message.h message.c smtp.h smtp.c local.h local.c rfc822.c xmalloc.h
+esmtp_SOURCES = \
+	lexer.l \
+	list.h \
+	local.c \
+	local.h \
+	main.c \
+	main.h \
+	message.c \
+	message.h \
+	parser.y \
+	rcfile.h \
+	rfc822.c \
+	rfc822.h \
+	smtp.c \
+	smtp.h \
+	xmalloc.h
 
 EXTRA_DIST = README.mutt sample.esmtprc
 
