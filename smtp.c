@@ -359,7 +359,7 @@ void smtp_send(message_t *msg)
 		goto failure;
 
 	/* Set the SMTP Starttls extension. */
-	if(!smtp_starttls_enable (session, identity->starttls))
+	if(identity->starttls && !smtp_starttls_enable (session, identity->starttls))
 		goto failure;
 
 	/* Do what's needed at application level to use authentication. */
