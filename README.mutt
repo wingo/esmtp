@@ -13,7 +13,7 @@ For debugging purposes you may prefer using the follwing shell script.
 
 	echo $0 $@ > $LOGFILE
 
-	/path/to/esmtp -m $@ >> $LOGFILE
+	/path/to/esmtp -v $@ >> $LOGFILE
 
 	exit $?
 
