@@ -1,2 +1,3 @@
 - handle the '-t' option
 - safer memory allocation
+- local mail delivery

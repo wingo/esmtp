@@ -16,6 +16,7 @@ dnl getopt needs this
 AC_C_CONST
 
 AM_PROG_LEX
+AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_YACC
 

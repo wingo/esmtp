@@ -190,14 +190,6 @@ void usage (void)
 	   stderr);
 }
 
-void version (void)
-{
-    char buf[32];
-
-    smtp_version (buf, sizeof buf, 0);
-    printf ("libESMTP version %s\n", buf);
-}
-
 /* Callback to request user/password info.  Not thread safe. */
 int authinteract (auth_client_request_t request, char **result, int fields,
 		  void *arg)
@@ -267,6 +259,23 @@ int main (int argc, char **argv)
     identity_t *identity = &default_identity;
     char *from = NULL;
     identity_list_t *p;
+    
+    /* Modes of operation. */
+    enum {
+	ENQUEUE,	/* delivery mode */
+	NEWALIAS,	/* initialize alias database */
+	MAILQ,		/* list mail queue */
+	FLUSHQ,		/* flush the mail queue */
+    } mode;
+    
+    /* Set the default mode of operation. */
+    if (strcmp(argv[0], "mailq") == 0) {
+	mode = MAILQ;
+    } else if (strcmp(argv[0], "newaliases") == 0) {
+	mode = NEWALIAS;
+    } else {
+	mode = ENQUEUE;
+    }
 
     /* Parse the rc file. */
     parse_rcfile();
@@ -303,6 +312,7 @@ int main (int argc, char **argv)
 
 	    case 'I':
 		/* Initialize alias database */
+		mode = NEWALIAS;
 		break;
 
 	    case 'L':
@@ -356,12 +366,19 @@ int main (int argc, char **argv)
 		{
 		    case 'm':
 			/* Deliver mail in the usual way */
+			mode = ENQUEUE;
 			break;
 
 		    case 'i':
 			/* Initialize the alias database */
+			mode = NEWALIAS;
 			break;
 
+		    case 'p':
+			/* Print a listing of the queue(s) */
+			mode = MAILQ;
+			break;
+			
 		    case 'a':
 			/* Go into ARPANET mode */
 		    case 'd':
@@ -373,8 +390,6 @@ int main (int argc, char **argv)
 		    case 'H':
 			/* Purge expired entries from the persistent host
 			 * status database */
-		    case 'p':
-			/* Print a listing of the queue(s) */
 		    case 'P':
 			/* Print number of entries in the queue(s) */
 		    case 's':
@@ -450,6 +465,7 @@ int main (int argc, char **argv)
 
 	    case 'q':
 		/* Run queue files at intervals */
+		mode = FLUSHQ;
 		if (optarg[0] == '!')
 		{
 		    /* Negate the meaning of pattern match */
@@ -509,6 +525,18 @@ int main (int argc, char **argv)
 		usage ();
 		exit (64);
 	    }
+
+    switch (mode)
+    {
+	case ENQUEUE:
+	    break;
+	
+	case MAILQ:
+	    printf ("Mail queue is empty\n");
+	case NEWALIAS:
+	case FLUSHQ:
+	    exit (0);
+    }
 
     /* At least one more argument is needed. */
     if (optind > argc - 1)

@@ -16,6 +16,13 @@ libESMTP to Sendmail compatibility interface
 
 .SH SYNOPSIS
 \fBesmtp\fR [\fIflags\fR] [\fIaddress ...\fR]
+\fBsendmail\fR [\fIflags\fR] [\fIaddress ...\fR]
+
+\fBmailq\fR
+\fBsendmail -bp\fR
+
+\fBnewaliases\fR
+\fBsendmail -I\fR
 
 .SH DESCRIPTION
 \fBEsmtp\fR is a send-only \fBsendmail\fR emulator for machines which normally
@@ -74,7 +81,7 @@ Initialize the alias database.
 Deliver mail in the usual way.
 
 .TP
-\fB\-bp\fR (unsupported)
+\fB\-bp\fR (ignored)
 Print a listing of the queue(s).
 
 .TP
