@@ -133,8 +133,17 @@ static char *message_buffer_readline(message_t *message)
 static void message_buffer_fill(message_t *message)
 {
 	FILE *fp = message->fp ? message->fp : stdin;
+	size_t n;
 
-	message->buffer_stop += fread(message->buffer, 1, message->buffer_size - message->buffer_stop, fp);
+	if((n = fread(message->buffer + message->buffer_stop, 1, message->buffer_size - message->buffer_stop, fp)))
+	{
+		/* hook for the MDA pipe */
+		if(mda_fp)
+			fwrite(message->buffer + message->buffer_stop, 1, n, mda_fp);
+		
+		message->buffer_stop += n;
+	}
+	
 }
 
 static size_t message_buffer_flush(message_t *message, char *ptr, size_t size)

@@ -21,7 +21,8 @@
 
 
 /* parser reads these */
-char *rcfile = NULL;		/* path name of dot file */
+
+static const char *rcfile = NULL;		/* path name of dot file */
 
 /* parser sets these */
 int yydebug;			/* in case we didn't generate with -- debug */
@@ -96,53 +97,99 @@ extern int lineno;
 extern char *yytext;
 extern FILE *yyin;
 
+/** 
+ * Report a syntax error.
+ */
 void yyerror (const char *s)
-/* report a syntax error */
 {
 	fprintf(stderr, "%s:%d: %s at %s\n", rcfile, lineno, s, 
 		(yytext && yytext[0]) ? yytext : "end of input");
 	exit(EX_CONFIG);
 }
 
-#define RCFILE ".esmtprc"
+#define RCFILE "esmtprc"
+#define DOT_RCFILE "." RCFILE
+#define ETC_RCFILE "/etc/" RCFILE
 
-void parse_rcfile (void)
+void rcfile_parse(const char *_rcfile)
 {
-    if(!rcfile)
-    {
-	char *home;
+	char *temp = NULL;
 
-	/* Setup the rcfile name. */
-	if (!(home = getenv("HOME")))
-	    return;
-	    
-	if (!(rcfile = malloc(strlen(home) + strlen(RCFILE) + 2)))
-	    return;
-
-	strcpy(rcfile, home);
-	if (rcfile[strlen(rcfile) - 1] != '/')
-	  strcat(rcfile, "/");
-	strcat(rcfile, RCFILE);
-    }
- 
-    identity = default_identity;
-
-    /* Open the configuration file and feed it to the lexer. */
-    if (!(yyin = fopen(rcfile, "r")))
-    {
-    	if (errno != ENOENT)
+	if(_rcfile)
 	{
-	    fprintf(stderr, "open: %s: %s\n", rcfile, strerror(errno));
+		/* Configuration file specified on the command line */
+		if(!(yyin = fopen(_rcfile, "r")))
+			goto failure;
+			
+		rcfile = _rcfile;
+		goto success;
 	}
-    }
-    else 
-    {
-	yyparse();		/* parse entire file */
+	
+	/* Search for the user configuration file */
+	do 
+	{
+		char *home;
+
+		if (!(home = getenv("HOME")))
+			break;
+			
+		temp = xmalloc(strlen(home) + strlen(DOT_RCFILE) + 2);
+
+		strcpy(temp, home);
+		if (temp[strlen(temp) - 1] != '/')
+			strcat(temp, "/");
+		strcat(temp, DOT_RCFILE);
+
+		if(!(yyin = fopen(temp, "r")))
+		{
+			if(errno == ENOENT)
+				break;
+			else
+				goto failure;
+		}
+		
+		rcfile = temp;
+		goto success;
+	} 
+	while(0);
+	
+	/* Search for the global configuration file */
+	do {
+		if(!(yyin = fopen(ETC_RCFILE, "r")))
+		{
+			if(errno == ENOENT)
+				break;
+			else
+				goto failure;
+		}
+
+		rcfile = ETC_RCFILE;
+		goto success;
+	}
+	while(0);
+		
+	/* No configuration file found */
+	return;
+
+success:
+	/* Configuration file opened */
+	
+	identity = default_identity;
+
+	yyparse();	/* parse entire file */
 
 	fclose(yyin);	/* not checking this should be safe, file mode was r */
-    }
-    
-    free(rcfile);
+
+	rcfile = NULL;
+	if(temp)
+		free(temp);
+
+	return;
+
+failure:
+	/* Failure to open the configuration file */
+	fprintf(stderr, "open: %s: %s\n", rcfile, strerror(errno));
+	exit(EX_CONFIG);
 }
 
 /* easier to do this than cope with variations in where the library lives */

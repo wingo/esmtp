@@ -18,7 +18,6 @@
 #include <libesmtp.h>
 
 #include "smtp.h"
-#include "local.h"
 #include "main.h"
 #include "xmalloc.h"
 
@@ -148,10 +147,6 @@ static const char * message_cb (void **buf, int *len, void *arg)
 	}
 
 	*len = message_read(message, *buf, BUFSIZ);
-	
-	/** hook for the MDA */
-	if(mda_fp)
-		fwrite(*buf, 1, *len, mda_fp);
 	
 	return *buf;
 }

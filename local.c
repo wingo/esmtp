@@ -49,7 +49,7 @@ void local_init(message_t *message)
 
 	if (!mda)
 	{
-		fprintf(stderr, "local delivery not possible without a MDA");
+		fprintf(stderr, "Local delivery not possible without a MDA\n");
 		exit(EX_OSFILE);
 	}
 
@@ -167,7 +167,7 @@ void local_init(message_t *message)
 
 	if(!(mda_fp = popen(before, "w")))
 	{
-		fprintf(stderr, "MDA open failed\n");
+		fprintf(stderr, "Failed to connect to MDA\n");
 		exit(EX_OSERR);
 	}
 		
@@ -184,7 +184,7 @@ void local_flush(message_t *message)
 
 	do {
 		n = message_read(message, buffer, BUFSIZ);
-		if(fwrite(buffer, 1, n, mda_fp) != n)
+		if(ferror(mda_fp))
 		{
 			perror(NULL);
 			exit(EX_OSERR);

@@ -13,6 +13,7 @@
 #include "message.h"
 #include "smtp.h"
 #include "local.h"
+#include "rcfile.h"
 
 
 /** Modes of operation. */
@@ -35,13 +36,11 @@ int main (int argc, char **argv)
 	enum notify_flags notify = Notify_NOTSET;
 	char *from = NULL;
 	message_t *message;
-	int parse_headers, local, remote;
+	int parse_headers = 0, local, remote;
 	opmode_t mode;
+	char *rcfile = NULL;
 	
 	identities_init();
-
-	/* Parse the rc file. */
-	parse_rcfile();
 
 	/* Set the default mode of operation. */
 	if (strcmp(argv[0], "mailq") == 0) {
@@ -298,6 +297,9 @@ int main (int argc, char **argv)
 		exit (EX_USAGE);
 	}
 
+	/* Parse the rc file. */
+	rcfile_parse(rcfile);
+
 	message = message_new();
 
 	/** Parse the envelope headers */
@@ -330,18 +332,8 @@ int main (int argc, char **argv)
 	else
 	{
 		local_init(message);
-
 		smtp_send(message);
-
-		if(ferror(mda_fp))
-		{
-			perror(NULL);
-			exit(EX_OSERR);
-		}
-
-		if(!message_eof(message))
-			local_flush(message);
-			
+		local_flush(message);
 		local_cleanup();
 	}
 	

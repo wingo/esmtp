@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 
+
 /**
  * Error codes as specified in sendmail's sysexits.h
  */
@@ -34,10 +35,5 @@ enum {
 extern FILE *log_fp;
 
 extern int verbose;
-
-extern char *rcfile;
-
-
-extern void parse_rcfile(void);
 
 #endif
