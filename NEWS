@@ -1,6 +1,13 @@
 News
 ~~~~
 
+  * Version 0.4.2 (under development):
+  
+    * Fixed a bug which prevented to send mail when libesmtp had no
+    openssl support (Tomas Kondor).
+    
+    * New 'default' keyword for identities (Vitezslav Batrla).
+
   * Version 0.4.1 (2004-07-14):
   
     * Packaging fixes.

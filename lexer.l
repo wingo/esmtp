@@ -68,6 +68,8 @@ disabled	{ return DISABLED; }
 enabled		{ return ENABLED; }
 required	{ return REQUIRED; }
 
+default		{ return DEFAULT; }
+
 (#.*)?\\?\n	{ lineno++; }   /* newline is ignored */
 
 -?[0-9]+/[^a-zA-Z]	{ yylval.number = atoi(yytext); return NUMBER; }

@@ -84,8 +84,9 @@ An identity is a set of options associated with a given address.  For example:
 Identities are be selected by the address specified in the \fB\-f\fR flag.  You
 can have as many you like.
 
-The options up to the first \fBidentity\fR option constitute the default
-identity.
+The options in the global section (up to the first \fBidentity\fR option)
+constitute the default identity. If no options in the global section are given
+then the first defined identity is taken as the default one.
 
 Note that the default identity settings are not shared by the other identities.
 Everything (username, password, etc.) must be specified for every identity even

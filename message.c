@@ -335,13 +335,7 @@ unsigned message_parse_headers(message_t *message)
 			start = stop;
 
 			if(line[0] == '\n')
-			{
-				printf("size: %d\n", message->buffer_size);
-				printf("start: %d\n", message->buffer_start);
-				printf("stop: %d\n", message->buffer_stop);
-	
 				return count;
-			}
 		}
 	}
 	

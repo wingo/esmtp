@@ -22,22 +22,35 @@ Configuration
 ~~~~~~~~~~~~~
 
 
-* Sample configuration file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Sample configuration files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   This is a simple configuration file for a quick start:
 
 --------------------------------------
 hostname = mail.myisp.com:25
-username = "myusername"
-password = "mysecret"
+username = "myself"
+password = "secret"
 starttls = enabled
 
-identity = myself@somewhere.com
-        hostname = smtp.somewhere.com:25
-        username = "myself"
-        password = "secret"
-        starttls = enabled
+mda "/usr/bin/procmail -d %T"
+--------------------------------------
+
+  If you have more than one SMTP account you have them automatically chosen for
+  you:
+
+--------------------------------------
+identity myself@myisp.com
+        hostname mail.myisp.com:25
+        username "myself"
+        password "secret"
+        starttls enabled
+	default
+
+identity myself@anotherisp.com
+        hostname smtp.anotherisp.com:25
+        username "myself"
+        password "secret"
 
 mda "/usr/bin/procmail -d %T"
 --------------------------------------

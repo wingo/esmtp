@@ -20,20 +20,33 @@
 #include "xmalloc.h"
 
 
-/* parser reads these */
+/** Path name of dot file */
+static const char *rcfile = NULL;		
 
-static const char *rcfile = NULL;		/* path name of dot file */
-
-/* parser sets these */
-int yydebug;			/* in case we didn't generate with -- debug */
+int yydebug;			/**< in case we didn't generate with -- debug */
 
 static identity_t *identity = NULL;
+
+/**
+ * Utility macro to set the default identity, if one isn't set yet. 
+ * 
+ * It's necessary for compatability with older configurations files where the
+ * default identity was defined in a global section, instead of defined by the
+ * 'default' or the first defined identity, if no 'default' keyword is given.
+ */
+#define SET_DEFAULT_IDENTITY						\
+do {									\
+	if(!default_identity)						\
+		default_identity = identity;				\
+} while(0)
 
 /* using Bison, this arranges that yydebug messages will show actual tokens */
 extern char * yytext;
 #define YYPRINT(fp, type, val)	fprintf(fp, " = \"%s\"", yytext)
 
 void yyerror (const char *s);
+
+
 %}
 
 %union {
@@ -41,7 +54,7 @@ void yyerror (const char *s);
     char *sval;
 }
 
-%token IDENTITY HOSTNAME USERNAME PASSWORD STARTTLS CERTIFICATE_PASSPHRASE MDA
+%token IDENTITY DEFAULT HOSTNAME USERNAME PASSWORD STARTTLS CERTIFICATE_PASSPHRASE MDA
 
 %token MAP
 
@@ -80,14 +93,15 @@ statement_list	: statement
 		;
 
 /* future global options should also have the form SET <name> optmap <value> */
-statement	: HOSTNAME map STRING	{ identity->host = xstrdup($3); }
-		| USERNAME map STRING	{ identity->user = xstrdup($3); }
-		| PASSWORD map STRING	{ identity->pass = xstrdup($3); }
-		| STARTTLS map DISABLED	{ identity->starttls = Starttls_DISABLED; }
-		| STARTTLS map ENABLED	{ identity->starttls = Starttls_ENABLED; }
-		| STARTTLS map REQUIRED	{ identity->starttls = Starttls_REQUIRED; }
-		| CERTIFICATE_PASSPHRASE map STRING { identity->certificate_passphrase = xstrdup($3); }
+statement	: HOSTNAME map STRING	{ identity->host = xstrdup($3); SET_DEFAULT_IDENTITY; }
+		| USERNAME map STRING	{ identity->user = xstrdup($3); SET_DEFAULT_IDENTITY; }
+		| PASSWORD map STRING	{ identity->pass = xstrdup($3); SET_DEFAULT_IDENTITY; }
+		| STARTTLS map DISABLED	{ identity->starttls = Starttls_DISABLED; SET_DEFAULT_IDENTITY; }
+		| STARTTLS map ENABLED	{ identity->starttls = Starttls_ENABLED; SET_DEFAULT_IDENTITY; }
+		| STARTTLS map REQUIRED	{ identity->starttls = Starttls_REQUIRED; SET_DEFAULT_IDENTITY; }
+		| CERTIFICATE_PASSPHRASE map STRING { identity->certificate_passphrase = xstrdup($3); SET_DEFAULT_IDENTITY; }
 		| MDA map STRING	{ mda = xstrdup($3); }
+		| DEFAULT		{ default_identity = identity; }
 		;
 
 %%
@@ -174,9 +188,12 @@ void rcfile_parse(const char *_rcfile)
 success:
 	/* Configuration file opened */
 	
-	identity = default_identity;
+	identity = identity_new();
+	identity_add(identity);
 
 	yyparse();	/* parse entire file */
+
+	SET_DEFAULT_IDENTITY;
 
 	fclose(yyin);	/* not checking this should be safe, file mode was r */
 

@@ -80,7 +80,7 @@ identity_t *identity_lookup(const char *address)
 			identity_t *identity;
 			
 			identity = list_entry(ptr, identity_t, list);
-			if(!strcmp(identity->address, address))
+			if(identity->address && !strcmp(identity->address, address))
 				return identity;
 		}
 	}
@@ -90,13 +90,11 @@ identity_t *identity_lookup(const char *address)
 	
 void identities_init(void)
 {
-	default_identity = identity_new();
 }
 
 void identities_cleanup(void)
 {
-	if(default_identity)
-		identity_free(default_identity);
+	default_identity = NULL;
 
 	if(!list_empty(&identities))
 	{
@@ -389,8 +387,16 @@ void smtp_send(message_t *msg)
 		goto failure;
 
 	/* Set the reverse path for the mail envelope.  (NULL is ok) */
-	if(!smtp_set_reverse_path (message, msg->reverse_path))
-		goto failure;
+	if(msg->reverse_path)
+	{
+		if(!smtp_set_reverse_path (message, msg->reverse_path))
+			goto failure;
+	}
+	else
+	{
+		if(!smtp_set_reverse_path (message, identity->address))
+			goto failure;
+	}
 
 	/* Open the message file and set the callback to read it. */
 	if(!smtp_set_messagecb (message, message_cb, msg))
