@@ -153,23 +153,17 @@ static void message_buffer_fill(message_t *message)
 	FILE *fp = message->fp ? message->fp : stdin;
 	size_t n;
 
-	if((n = fread(message->buffer + message->buffer_stop, 1, message->buffer_size - message->buffer_stop, fp)))
-	{
-		/* hook for the MDA pipe */
-		if(mda_fp)
-			fwrite(message->buffer + message->buffer_stop, 1, n, mda_fp);
-		
-		message->buffer_stop += n;
-	}
+	message->buffer_stop += fread(message->buffer + message->buffer_stop, 1, message->buffer_size - message->buffer_stop, fp);
 	
 }
 
 static size_t message_buffer_flush(message_t *message, char *ptr, size_t size)
 {
-	size_t count, n;
+	size_t count, n, s;
 	char *p, *q;
 	
-	p = message->buffer + message->buffer_start;
+	s = message->buffer_start;
+	p = message->buffer + s;
 	count = 0;
 	while(count < size && message->buffer_start < message->buffer_stop)
 	{
@@ -198,7 +192,7 @@ static size_t message_buffer_flush(message_t *message, char *ptr, size_t size)
 		}
 
 		if(count == size)
-			return count;
+			break;
 		
 		if(q)
 		{
@@ -210,7 +204,7 @@ static size_t message_buffer_flush(message_t *message, char *ptr, size_t size)
 				if(count == size)
 				{
 					message->buffer_r = 1;
-					return count;
+					break;
 				}
 			}
 			else
@@ -222,6 +216,10 @@ static size_t message_buffer_flush(message_t *message, char *ptr, size_t size)
 		}
 	}
 
+	/* hook for the MDA pipe */
+	if(mda_fp && message->buffer_start != s)
+		fwrite(message->buffer +s, 1, message->buffer_start - s, mda_fp);
+
 	if(message->buffer_start == message->buffer_stop)
 		message->buffer_start = message->buffer_stop = 0;
 	
@@ -231,36 +229,26 @@ static size_t message_buffer_flush(message_t *message, char *ptr, size_t size)
 size_t message_read(message_t *message, char *ptr, size_t size)
 {
 	size_t count = 0, n;
+	char *p = ptr;
 
 	if(!message->buffer)
 		message_buffer_alloc(message);
 
-	n = message_buffer_flush(message, ptr, size);
+	n = message_buffer_flush(message, p, size);
 	count += n;
-	ptr += n;
+	p += n;
 	
 	while(count != size)
 	{
 		message_buffer_fill(message);
 		
-		if(!(n = message_buffer_flush(message, ptr, size - count)))
+		if(!(n = message_buffer_flush(message, p, size - count)))
 			break;
 		count += n;
-		ptr += n;
-
+		p += n;
 	};
 		
 	return count;
-}
-
-void message_rewind(message_t *message)
-{
-	FILE *fp = message->fp ? message->fp : stdin;
-	
-	message->buffer_start = message->buffer_stop = 0;
-	message->buffer_r = 0;
-	
-	rewind(fp);
 }
 
 int message_eof(message_t *message)
@@ -347,7 +335,13 @@ unsigned message_parse_headers(message_t *message)
 			start = stop;
 
 			if(line[0] == '\n')
+			{
+				printf("size: %d\n", message->buffer_size);
+				printf("start: %d\n", message->buffer_start);
+				printf("stop: %d\n", message->buffer_stop);
+	
 				return count;
+			}
 		}
 	}
 	

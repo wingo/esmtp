@@ -135,16 +135,15 @@ static const char * message_cb (void **buf, int *len, void *arg)
 	int octets;
 
 	if (len == NULL)
+	{
+		/* only allow rewinding in the beginning of a message otherwise
+		 * it will break the pipes */
 		assert(*buf == NULL);
+		return;
+	}
 
 	if (*buf == NULL)
 		*buf = malloc (BUFSIZ);
-
-	if (len == NULL)
-	{
-		message_rewind(message);
-		return NULL;
-	}
 
 	*len = message_read(message, *buf, BUFSIZ);
 	

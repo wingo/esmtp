@@ -67,8 +67,6 @@ unsigned message_parse_headers(message_t *message);
 
 size_t message_read(message_t *message, char *ptr, size_t size);
 
-void message_rewind(message_t *message);
-
 int message_eof(message_t *message);
 
 #endif

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "local.h"
 #include "main.h"
@@ -191,7 +192,19 @@ void local_cleanup(void)
 {
 	if(mda_fp)
 	{
-		fclose(mda_fp);
+		int status;
+		
+		if((status = pclose(mda_fp)))
+		{
+			if(WIFSIGNALED(status)) 
+				fprintf(stderr, "MDA died of signal %d\n", WTERMSIG(status));
+			else if(WIFEXITED(status))
+				fprintf(stderr, "MDA returned nonzero status %d\n", WEXITSTATUS(status));
+			else
+				fprintf(stderr, "MDA failed\n");
+			exit(EX_OSERR);
+		}
+			
 		mda_fp = NULL;
 
 		if(verbose)

@@ -1,11 +1,16 @@
 News
 ~~~~
 
-  * Version 0.4.1 (under development):
+  * Version 0.4.1 (2004-07-14):
   
     * Packaging fixes.
 
     * Esmtprc man page.
+
+    * Fixed the MDA return status which wasn't being cheked.
+
+    * Fixed a bug the input buffering which when using the '-t' option and
+    piping the input caused the parsed headers to be lost.
     
     
   * Version 0.4 (2003-07-12):
