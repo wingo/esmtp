@@ -127,7 +127,7 @@ void yyerror (const char *s)
 
 #define RCFILE "esmtprc"
 #define DOT_RCFILE "." RCFILE
-#define ETC_RCFILE "/etc/" RCFILE
+#define ETC_RCFILE SYSCONFDIR "/" RCFILE
 
 void rcfile_parse(const char *_rcfile)
 {

@@ -30,6 +30,8 @@ else
 	AC_MSG_ERROR(libESMTP library not found)
 fi
 
+AC_SUBST( sysconfdir )
+
 adl_FUNC_GETOPT_LONG
 
 AC_CONFIG_FILES([Makefile])
