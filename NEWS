@@ -4,7 +4,7 @@ News
   * Version 0.4.2 (under development):
 
     * Detailed documentation on how to use the StartTLS extension. More
-    verbosity on StarTLS error messages.
+    verbosity on StartTLS error messages.
     
     * New 'preconnect' keyword to execute a command prior to opening an SMTP
     connection (Daniel Richard G.).
