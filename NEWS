@@ -1,6 +1,9 @@
 News
 ~~~~
 
+  * Version 0.5.1 (under development):
+  
+
   * Version 0.5.0 (2003-11-14):
 
     * Fixed another bug which prevented to send mail when libesmtp had no

@@ -1,40 +1,33 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.53)
-AC_INIT(esmtp, 0.5.0)
+AC_INIT(esmtp, 0.5.1)
 AC_CONFIG_SRCDIR(Makefile.am)
 AM_INIT_AUTOMAKE(1.7 dist-bzip2)
 AM_MAINTAINER_MODE
 
 AC_PROG_CC
-AC_PROG_CPP
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h unistd.h)
 
 dnl getopt needs this
 AC_C_CONST
 
-AM_PROG_LEX
+AC_PROG_LEX
 AC_PROG_LN_S
-AC_PROG_MAKE_SET
 AC_PROG_YACC
 
-YFLAGS=-d
-
-dnl Check for pthreads
-ACX_PTHREAD(
-    LIBS="$PTHREAD_LIBS $LIBS"
-    CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
-    CC="$PTHREAD_CC",
-    AC_MSG_WARN([No pthreads on this system.]))
-
 dnl Check for libESMTP
-AC_CHECK_LIB(
-    esmtp, 
-    smtp_start_session,
-    ,
-    AC_MSG_ERROR([*** libESMTP library not found.]))
+AC_MSG_CHECKING(for libESMTP)
+if libesmtp-config --version > /dev/null 2>&1
+then
+	AC_MSG_RESULT(yes)
+	CFLAGS="$CFLAGS `libesmtp-config --cflags`"
+	LIBS="$LIBS `libesmtp-config --libs`"
+else
+	AC_MSG_RESULT(no)
+	AC_MSG_ERROR(libESMTP library not found)
+fi
 
 adl_FUNC_GETOPT_LONG
 
