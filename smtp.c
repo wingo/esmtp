@@ -433,7 +433,7 @@ void smtp_send(message_t *msg)
 	/* Use our callback for X.509 certificate passwords.  If STARTTLS is not in
 	 * use or disabled in configure, the following is harmless.
 	 */
-	if(!smtp_starttls_set_password_cb (tlsinteract, identity))
+	if(identity->starttls && !smtp_starttls_set_password_cb (tlsinteract, identity))
 		goto failure;
 
 	/* Now tell libESMTP it can use the SMTP AUTH extension. */

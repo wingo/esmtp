@@ -3,6 +3,9 @@ News
 
   * Version 0.4.2 (under development):
 
+    * Fixed another bug which prevented to send mail when libesmtp had no
+    openssl support (Maurice Galland).
+    
     * Detailed documentation on how to use the StartTLS extension. More
     verbosity on StartTLS error messages.
     
