@@ -137,7 +137,7 @@ static const char * message_cb (void **buf, int *len, void *arg)
 		/* only allow rewinding in the beginning of a message otherwise
 		 * it will break the pipes */
 		assert(*buf == NULL);
-		return;
+		return NULL;
 	}
 
 	if (*buf == NULL)
