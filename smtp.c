@@ -62,6 +62,12 @@ void identity_free(identity_t *identity)
 	if(identity->certificate_passphrase)
 		free(identity->certificate_passphrase);
 
+	if(identity->preconnect)
+		free(identity->preconnect);
+
+	if(identity->postconnect)
+		free(identity->postconnect);
+
 	free(identity);
 }
 
@@ -562,6 +568,43 @@ void smtp_send(message_t *msg)
 	smtp_destroy_session (session);
 	auth_destroy_context (authctx);
 	auth_client_exit ();
+
+	/* Execute post-connect command if one was specified. */
+	if (identity->postconnect)
+	{
+		int ret, exit_status;
+
+		if (verbose)
+			fprintf (stdout, "Executing post-connect command: %s\n", identity->postconnect);
+
+		ret = system (identity->postconnect);
+		exit_status = WEXITSTATUS(ret);
+
+		/* Check whether the child process caught a signal meant for us */
+		if (WIFSIGNALED(ret))
+		{
+			int sig = WTERMSIG(ret);
+
+			if (sig == SIGINT || sig == SIGQUIT)
+			{
+				fprintf (stderr, "Post-connect command received signal %d\n", sig);
+				exit (EX_SOFTWARE);
+			}
+		}
+
+		if (ret == -1)
+		{
+			fputs ("Error executing post-connect command\n", stderr);
+			exit (EX_OSERR);
+		}
+
+		if (exit_status != 0)
+		{
+			fprintf (stderr, "Post-connect command \"%s\" exited with non-zero status %d\n",
+				 identity->postconnect, exit_status);
+			exit (EX_SOFTWARE);
+		}
+	}
 
 	return;
 

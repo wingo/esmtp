@@ -2,6 +2,9 @@ News
 ~~~~
 
   * Version 0.5.1 (under development):
+
+    * A 'postconnect' keyword to execute a command after closing a SMTP
+    connection.
   
 
   * Version 0.5.0 (2003-11-14):
@@ -12,13 +15,14 @@ News
     * Detailed documentation on how to use the StartTLS extension. More
     verbosity on StartTLS error messages.
     
-    * New 'preconnect' keyword to execute a command prior to opening an SMTP
+    * New 'preconnect' keyword to execute a command prior to opening a SMTP
     connection (Daniel Richard G.).
     
     * Fixed a bug which prevented to send mail when libesmtp had no
     openssl support (Tomas Kondor).
     
     * New 'default' keyword for identities (Vitezslav Batrla).
+
 
   * Version 0.4.1 (2003-07-14):
   
@@ -70,4 +74,5 @@ News
   * Version 0.1 (2002-09-26):
 
     * Initial release.
+
 

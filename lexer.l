@@ -61,6 +61,7 @@ pass(word)?	{ BEGIN(NAME); return PASSWORD; }
 (start)?tls	{ return STARTTLS; }
 (certificate_)?passphrase	{ return CERTIFICATE_PASSPHRASE; }
 preconnect	{ return PRECONNECT; }
+postconnect	{ return POSTCONNECT; }
 mda		{ return MDA; }
 
 =		{ return MAP; }

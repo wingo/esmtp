@@ -27,21 +27,22 @@ typedef struct {
 
 	char *host;	/**< hostname and service (port) */
 
-	/** \name Auth Extension */
+	/** \name Auth extension */
 	/*@{*/
 	char *user;
 	char *pass;
 	/*@}*/
 
-	/** \name StartTLS Extension */
+	/** \name StartTLS extension */
 	/*@{*/
 	enum starttls_option starttls;
 	char *certificate_passphrase;
 	/*@}*/
 
-	/** \name Pre-connect Command */
+	/** \name Pre- and post-connect commands */
 	/*@{*/
 	char *preconnect;
+	char *postconnect;
 	/*@}*/
 } identity_t;
 
