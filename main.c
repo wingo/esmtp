@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -89,6 +90,76 @@ const char * readlinefp_cb (void **buf, int *len, void *arg)
     }
     *len = octets;
     return *buf;
+}
+
+#define SIZETICKER 1024	/* print 1 dot per this many bytes */
+
+void event_cb (smtp_session_t session, int event_no, void *arg, ...)
+{
+    FILE *fp = arg;
+    va_list ap;
+    const char *mailbox;
+    smtp_message_t message;
+    smtp_recipient_t recipient;
+    const smtp_status_t *status;
+    static int sizeticking = 0, sizeticker;
+
+    if (event_no != SMTP_EV_MESSAGEDATA && sizeticking)
+    {
+	fputs("\n", fp);
+	sizeticking = 0;
+    }
+
+    va_start (ap, arg);
+    switch (event_no) {
+	case SMTP_EV_CONNECT:
+	    fputs("Connected to MTA\n", fp);
+	    break;
+	    
+	case SMTP_EV_MAILSTATUS:
+	    mailbox = va_arg (ap, const char *);
+	    message = va_arg (ap, smtp_message_t);
+	    status = smtp_reverse_path_status (message);
+	    fprintf (fp, "From %s: %d %s", mailbox, status->code, status->text);
+	    break;
+
+	case SMTP_EV_RCPTSTATUS:
+	    mailbox = va_arg (ap, const char *);
+	    recipient = va_arg (ap, smtp_recipient_t);
+	    status = smtp_recipient_status (recipient);
+	    fprintf (fp, "To %s: %d %s", mailbox, status->code, status->text);
+	    break;
+	    
+	case SMTP_EV_MESSAGEDATA:
+	    message = va_arg (ap, smtp_message_t);
+	    if (!sizeticking)
+	    {
+		fputs("Message data: ", fp);
+		sizeticking = 1;
+		sizeticker = SIZETICKER - 1;
+	    }
+	    sizeticker += va_arg (ap, int);
+	    while (sizeticker >= SIZETICKER)
+	    {
+		fputc('.', fp);
+		sizeticker -= SIZETICKER;
+	    }
+	    break;
+
+	case SMTP_EV_MESSAGESENT:
+	    message = va_arg (ap, smtp_message_t);
+	    status = smtp_message_transfer_status (message);
+	    fprintf (fp, "Message sent: %d %s", status->code, status->text);
+	    break;
+	    
+	case SMTP_EV_DISCONNECT:
+	    fputs("Disconnected\n", fp);
+	    break;
+	
+	default:
+	    break;
+    }
+    va_end (ap);
 }
 
 void monitor_cb (const char *buf, int buflen, int writing, void *arg)
@@ -159,8 +230,8 @@ int tlsinteract (char *buf, int buflen, int rwflag, void *arg)
 }
 
 /* Callback to print the recipient status. */
-void print_recipient_status (smtp_recipient_t recipient,
-			const char *mailbox, void *arg)
+void print_recipient_status (smtp_recipient_t recipient, const char *mailbox, 
+			     void *arg)
 {
     const smtp_status_t *status;
 
@@ -179,6 +250,7 @@ int main (int argc, char **argv)
     int c;
     int ret;
     enum notify_flags notify = Notify_NOTSET;
+    FILE *fp = NULL;
 
     /* Parse the rc file. */
     parse_rcfile();
@@ -248,6 +320,11 @@ int main (int argc, char **argv)
 
 	    case 'X':
 		/* Traffic log file */
+		if (fp)
+		    fclose(fp);
+		if ((fp = fopen(optarg, "a")))
+		    /* Add a protocol monitor. */
+		    smtp_set_monitorcb (session, monitor_cb, fp, 1);
 		break;
 
 	    case 'V':
@@ -396,7 +473,8 @@ int main (int argc, char **argv)
 
 	    case 'v':
 		/* Verbose */
-		smtp_set_monitorcb (session, monitor_cb, stdout, 1);
+		/* Set the event callback. */
+		smtp_set_eventcb (session, event_cb, stdout);
 		break;
 
 	    default:
@@ -501,8 +579,15 @@ int main (int argc, char **argv)
     }
 
     /* Free resources consumed by the program. */
+    if (fp)
+    {
+	fputc('\n', fp);
+	fclose(fp);
+    }
+
     smtp_destroy_session (session);
     auth_destroy_context (authctx);
     auth_client_exit ();
+
     exit (ret);
 }

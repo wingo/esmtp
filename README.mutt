@@ -11,17 +11,8 @@ ESMTP supports SENDMAIL envelope sender '-f' flag, so don't forget to add
 
 as well.
 
-For debugging purposes you may prefer using the follwing shell script which
-logs ESMTP to 
+For debugging purposes you may prefer to put in your ~/.muttrc
 
-	#!/bin/sh
-	LOGFILE=/tmp/esmtp.log
-	echo $0 $@ > $LOGFILE
-	/path/to/esmtp -v $@ >> $LOGFILE
-	exit $?
-
-Save it as esmtp.sh, make it executable, and put in your ~/.muttrc
-
-	set sendmail="/path/to/esmtp.sh"
+	set sendmail="/path/to/esmtp -X /tmp/esmtp.log"
 
 instead.
