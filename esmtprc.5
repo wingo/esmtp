@@ -46,7 +46,7 @@ expects a host name.
 \fBusername\fR
 Set the username for authentication with the SMTP server.
 
-Do NOT set the username and password on the system configuration file unless
+Do NOT set the username and password in the system configuration file unless
 you are the only user of this machine.  \fBEsmtp\fR is not run with suid
 privileges therefore the system configuration file must be readable by
 everyone.  If your SMTP server reuquires authentication and you are not the
@@ -75,7 +75,7 @@ Shell command to execute prior to opening an SMTP connection.
 This may be useful in conjunction with application-level transports (e.g.
 \fBssh\fR with its port-forwarding functionality) to secure the SMTP
 connection. \fBEsmtp\fR will wait for the command to exit before
-proceeding. If the command returns a non-zero status, delivery will be
+proceeding.  If the command returns a non-zero status, delivery will be
 aborted.
 
 .TP
@@ -106,12 +106,16 @@ if they don't differ from the default identity.
 \fBmda\fR
 Set the Mail Delivery Agent (MDA).
 
+\fBEsmtp\fR relies upon a MDA for local mail delivery, i.e., addresses without
+a '@' character.  A non-zero error status tells \fBesmtp\fR that delivery
+failed.
+
 The local delivery addresses will be inserted into the MDA command wherever you
-place a %T. The mail message's \fBFrom\fR address will be inserted where you
+place a %T.  The mail message's \fBFrom\fR address will be inserted where you
 place an %F.
 
-Some common MDAs are "/usr/bin/procmail -d %T",
-"/usr/bin/deliver" and "/usr/lib/mail.local %T".
+Some common MDAs are "/usr/bin/procmail -d %T", "/usr/bin/deliver" and
+"/usr/lib/mail.local %T".
 
 .SH SEE ALSO
 esmtp(1)
