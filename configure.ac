@@ -33,7 +33,7 @@ dnl Check for libESMTP
 AC_CHECK_LIB(
     esmtp, 
     smtp_start_session,
-    LIBS="$LIBS -lesmtp",
+    ,
     AC_MSG_ERROR([*** libESMTP library not found.]))
 
 adl_FUNC_GETOPT_LONG

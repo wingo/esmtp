@@ -26,12 +26,19 @@ AM_YFLAGS = -d
 
 install-exec-hook:
 	$(mkinstalldirs) $(DESTDIR)$(sbindir) $(DESTDIR)$(libdir)
+	rm -f $(DESTDIR)$(sbindir)/sendmail
+	rm -f $(DESTDIR)$(libdir)/sendmail
+	rm -f $(DESTDIR)$(bindir)/mailq
+	rm -f $(DESTDIR)$(bindir)/newaliases
 	$(LN_S) $(bindir)/esmtp $(DESTDIR)$(sbindir)/sendmail
 	$(LN_S) $(bindir)/esmtp $(DESTDIR)$(libdir)/sendmail
 	$(LN_S) $(bindir)/esmtp $(DESTDIR)$(bindir)/mailq
 	$(LN_S) $(bindir)/esmtp $(DESTDIR)$(bindir)/newaliases
 
 install-data-hook:
+	rm -f $(DESTDIR)$(man1dir)/sendmail.1
+	rm -f $(DESTDIR)$(man1dir)/mailq.1
+	rm -f $(DESTDIR)$(man1dir)/newaliases.1
 	$(LN_S) esmtp.1 $(DESTDIR)$(man1dir)/sendmail.1
 	$(LN_S) esmtp.1 $(DESTDIR)$(man1dir)/mailq.1
 	$(LN_S) esmtp.1 $(DESTDIR)$(man1dir)/newaliases.1
