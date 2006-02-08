@@ -4,6 +4,10 @@ News
   * CVS:
 
     * Corrections to the manpages (Reuben Thomas).
+
+    * Tips for adding missing Date: headers in messages for local delivery
+    (Bruce Schultz).
+
   
   * Version 0.5.1 (2005-03-10):
 
