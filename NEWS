@@ -3,6 +3,8 @@ News
 
   * CVS:
 
+    * Document how to get CA certificates.
+    
     * Corrections to the manpages (Reuben Thomas).
 
     * Tips for adding missing Date: headers in messages for local delivery
