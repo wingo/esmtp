@@ -1,8 +1,8 @@
 #! /bin/sh
 
-aclocal-1.7 \
+aclocal-1.9 \
 && autoheader \
-&& automake-1.7 --gnu --add-missing \
+&& automake-1.9 --gnu --add-missing \
 && autoconf \
 && CFLAGS="-Wall -pedantic -g" ./configure --enable-maintainer-mode
 
