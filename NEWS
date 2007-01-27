@@ -9,8 +9,11 @@ News
 
     * Tips for adding missing Date: headers in messages for local delivery
     (Bruce Schultz).
+    
+    * Use a reasonable default for the reverse path when one is not 
+    specified, instead of an empty one.
 
-  
+
   * Version 0.5.1 (2005-03-10):
 
     * A 'postconnect' keyword to execute a command after closing a SMTP

@@ -2,7 +2,7 @@
  * \file smtp.c
  * Send a message via libESMTP.
  *
- * \author Adapted from the libESMTP's mail-file example by José Fonseca.
+ * \author Adapted from the libESMTP's mail-file example by Josï¿½ Fonseca.
  */
 
 
@@ -24,6 +24,10 @@
 #include "smtp.h"
 #include "main.h"
 #include "xmalloc.h"
+
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN 256
+#endif
 
 
 /**
@@ -396,20 +400,40 @@ void print_recipient_status (smtp_recipient_t recipient, const char *mailbox,
 }
 
 /**
- * Escape a forced fields: %u by username %% by %
+ * Get username.
+ * 
+ * NOTE: Return value may point to a static area, which may be overriden to 
+ * subsequent calls to getpwent(), getpwnam(), or getpwuid().
  */
-
-static char *escape_forced_address (char *mask)
+static char *get_username(void)
 {
 	uid_t uid;
-	char *escaped, *e;
-	const char *p;
-	int len;
 	struct passwd *user;
 
 	uid = getuid();
 	user = getpwuid(uid);
+	
+	if (!user)
+	{
+		fprintf (stderr, "Could not determine the username of uid %d!\n", (int)uid);
+		exit (EX_NOUSERNAME);
+	}
 
+	return user->pw_name;
+}
+
+/**
+ * Escape a forced fields: %u by username %% by %
+ */
+static char *escape_forced_address (char *mask)
+{
+	char *username;
+	char *escaped, *e;
+	const char *p;
+	int len;
+
+	username = get_username();
+	
 	len = 0;
 	for (p=mask ; *p ; p++)
 	{
@@ -423,15 +447,7 @@ static char *escape_forced_address (char *mask)
 					len++;
 					break;
 				case 'u':
-					if (user)
-					{
-						len += strlen(user->pw_name);
-					}
-					else
-					{
-						fprintf (stderr, "Could not determine the username of uid %d!\n",(int)uid);
-						exit (EX_NOUSERNAME);
-					}
+					len += strlen(username);
 					break;
 			}
 		}
@@ -451,8 +467,8 @@ static char *escape_forced_address (char *mask)
 				*(e++) = *p;
 			else if (*p == 'u')
 			{
-				strcpy(e,user->pw_name);
-				e += strlen(user->pw_name);
+				strcpy(e,username);
+				e += strlen(username);
 			}
 		}
 		else
@@ -550,9 +566,10 @@ void smtp_send(message_t *msg, identity_t *identity)
 	if(!(message = smtp_add_message (session)))
 		goto failure;
 
-	/* Set the reverse path for the mail envelope.  (NULL is ok) */
+	/* Set the reverse path for the mail envelope. */
 	if(identity->force_reverse_path)
 	{
+		/* Use forced reverse path. */
 		char *value;
 
 		value = escape_forced_address(identity->force_reverse_path);
@@ -567,18 +584,47 @@ void smtp_send(message_t *msg, identity_t *identity)
 		{
 			if(!smtp_set_header (message, "From", NULL, msg->reverse_path))
 				goto failure;
-
 		}
 	}
 	else if(msg->reverse_path)
 	{
+		/* Use reverse path specified at command line. */
 		if(!smtp_set_reverse_path (message, msg->reverse_path))
+			goto failure;
+	}
+	else if(identity->address)
+	{
+		/* Use the identity address as reverse path. */
+		if(!smtp_set_reverse_path (message, identity->address))
 			goto failure;
 	}
 	else
 	{
-		if(!smtp_set_reverse_path (message, identity->address))
+		/* Use the "username@hostname" default. */
+		char *user;
+		char host[MAXHOSTNAMELEN];
+		int user_len;
+		int host_len;
+		char *reverse_path;
+		char *p;
+
+		user = get_username();
+		user_len = strlen(user);
+		if(gethostname(host, sizeof(host)))
+			strcpy(host, "localhost");
+		host_len = strlen(host);
+		
+		p = reverse_path = xmalloc(user_len + 1 + host_len + 1);
+		memcpy(p, user, user_len);
+		p += user_len;
+		*p++ = '@';
+		memcpy(p, host, host_len);
+		p += host_len;
+		*p = '\0';
+		
+		if(!smtp_set_reverse_path (message, reverse_path))
 			goto failure;
+		free(reverse_path);
 	}
 
 	/* Open the message file and set the callback to read it. */
