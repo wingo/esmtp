@@ -97,7 +97,7 @@ void local_init(message_t *message)
 	/* get From address for %F */
 	if (strstr(before, "%F"))
 	{
-		from = xstrdup(message->reverse_path);
+		from = xstrdup(message->reverse_path ? message->reverse_path : "");
 
 		sanitize(from);
 

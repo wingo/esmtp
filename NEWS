@@ -13,6 +13,9 @@ News
     * Use a reasonable default for the reverse path when one is not 
     specified, instead of an empty one.
 
+    * Prevent segfault expanding %F in the MDA string when the reverse 
+    path is not specified.
+
 
   * Version 0.5.1 (2005-03-10):
 
