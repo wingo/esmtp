@@ -25,7 +25,7 @@ libESMTP to Sendmail compatibility interface
 
 \fBnewaliases\fR
 .br
-\fBsendmail -I\fR
+\fBsendmail -bi\fR
 
 .SH DESCRIPTION
 \fBEsmtp\fR is a send-only \fBsendmail\fR emulator for machines which normally
@@ -137,6 +137,10 @@ Relay (gateway) submission of a message.
 .TP
 \fB\-h\fR \fIN\fR (ignored)
 Set the hop count to \fIN\fR.
+
+.TP
+\fB\-I\fR (ignored)
+Same as \fB\-bi\fR.
 
 .TP
 \fB\-i\fR (ignored)
