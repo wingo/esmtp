@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include <string.h>
+#include <errno.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
@@ -32,7 +33,7 @@ static void drop_sgids( void )
 
 	if( setregid(real_gid,real_gid) != 0 )
 	{
-		fprintf (stderr, "Could not drop setgid: %m!\n");
+		fprintf (stderr, "Could not drop setgid: %s\n", strerror(errno));
 		exit(EX_DROPPERM);
 	}
 }
