@@ -17,7 +17,7 @@ The equal sign is optional and can be replaced by whitespace.  The \fIvalue\fR
 may be enclosed in simple or double quotes, in which case special characters
 can be escaped as in normal C strings.
 
-Comments are delimited by the '#' character upto the newline character.
+Comments are delimited by the '#' character up to the newline character.
 
 .SH OPTIONS
 .TP
@@ -38,7 +38,7 @@ Note (from \fBlibESMTP\fR documentation): the default port number is set to
 587 since this is the port that should be used for mail submission, see RFC
 2476.  By choosing this default now, the API does not change behavior
 unexpectedly in the future as use of the new standard becomes commonplace.
-The hostport notation simplifies things for the application, the user can
+The host-port notation simplifies things for the application, the user can
 type "localhost:smtp" or "localhost:25" where the application
 expects a host name.
 
@@ -89,7 +89,7 @@ be replaced with the username. "%%" by "%".
 \fBforce reverse_path\fR
 Set the envelope from address. The address given to -f will only
 be used as "From:" when the message contains none. "%u" will
-be repalced with the username. "%%" by "%".
+be replaced with the username. "%%" by "%".
 
 .TP
 \fBpreconnect\fR
