@@ -3,7 +3,7 @@
  * \file parser.y
  * Parser for the rcfile.
  *
- * \author Adapted from fetchmail's rcfile_y.y by José Fonseca
+ * \author Adapted from fetchmail's rcfile_y.y by JosÃ© Fonseca
  */
 
 

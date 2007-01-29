@@ -3,7 +3,7 @@
  * \file lexer.l
  * Lexer for the rcfile.
  *
- * \author Adapted from fetchmail's rcfile_l.l by José Fonseca
+ * \author Adapted from fetchmail's rcfile_l.l by JosÃ© Fonseca
  */
 
 

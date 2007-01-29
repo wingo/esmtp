@@ -2,7 +2,7 @@
  * \file message.c
  * Simple message handling.
  * 
- * \author José Fonseca
+ * \author JosÃ© Fonseca
  */
 
 

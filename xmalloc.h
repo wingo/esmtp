@@ -2,7 +2,7 @@
  * \file xmalloc.c
  * Allocate space or die.
  *
- * \author Adapted from fetchmail's xmalloc.c by José Fonseca.
+ * \author Adapted from fetchmail's xmalloc.c by JosÃ© Fonseca.
  */
 
 #ifndef _XMALLOC_H

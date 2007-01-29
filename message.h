@@ -2,7 +2,7 @@
  * \file message.h
  * Simple message handling.
  * 
- * \author José Fonseca
+ * \author JosÃ© Fonseca
  */
 
 #ifndef _MESSAGE_H
