@@ -207,7 +207,7 @@ identity username@gmail.com
 mkdir ~/.authenticate
 chmod 0700 ~/.authenticate
 wget https://www.verisign.com/support/thawte-roots.zip
-unzip -p thawte-roots.zip 'Thawte Server Roots/ThawtePremiumServerCA.txt' > ~/.authenticate/ca.pem
+unzip -p thawte-roots.zip 'Thawte Server Roots/ThawtePremiumServerCA_b64.txt' > ~/.authenticate/ca.pem
 chmod 0600 ~/.authenticate/ca.pem
 ---------------------------------------
 
@@ -306,4 +306,5 @@ issuer=/C=ZA/ST=Western Cape/L=Cape Town/O=Thawte Consulting cc/OU=Certification
   Verify return code: 0 (ok)
 --------
 
-  See also http://curl.haxx.se/docs/sslcerts.html
+  See also {{http://curl.haxx.se/docs/sslcerts.html}}
+
