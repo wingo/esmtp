@@ -21,7 +21,8 @@ esmtp_SOURCES = \
 	xmalloc.h
 
 EXTRA_DIST = \
-	sample.esmtprc 
+	sample.esmtprc \
+	esmtp-wrapper
 
 AM_YFLAGS = -d
 
