@@ -1,5 +1,6 @@
-To do
-~~~~~
+				     -----
+				     To Do
+				     -----
 
   <<esmtp>> already fulfills all my needs, and I don't plan to spend much more
   time on it besides bug fixing.
@@ -9,7 +10,5 @@ To do
     * Write a comprehensive test suite.
 
     * Alias expansion.
-
-    * Include simple scripts to queue emails for dial-up connections.
 
 

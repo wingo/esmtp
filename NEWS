@@ -1,7 +1,9 @@
 News
 ~~~~
 
-  * CVS:
+  * Development:
+
+    * Wrapper script for off-line mail delivery (Phil Sutter).
 
     * Document how to get CA certificates.
     
