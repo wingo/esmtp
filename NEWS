@@ -3,6 +3,8 @@ News
 
   * Development:
 
+    * Handle CR-LF newline endings when parsing the headers.
+
     * Wrapper script for off-line mail delivery (Phil Sutter).
 
     * Document how to get CA certificates.

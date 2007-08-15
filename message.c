@@ -333,7 +333,7 @@ unsigned message_parse_headers(message_t *message)
 
 			start = stop;
 
-			if(line[0] == '\n')
+			if(line[0] == '\n' || line[0] == '\r')
 				return count;
 		}
 	}
