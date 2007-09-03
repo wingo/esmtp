@@ -79,7 +79,7 @@ deliver_queue() { # ()
 
 ME=`basename "$0"`
 case "$ME" in
-	sendmail)
+	sendmail|esmtp)
 		queue_mail "$@" || return 1
 		deliver_queue &
 	;;
@@ -87,7 +87,11 @@ case "$ME" in
 		deliver_queue
 	;;
 	mailq)
-		show_queue
+		if [ x"$1" = x"-q" ]; then
+			deliver_queue
+		else
+			show_queue
+		fi
 	;;
 	*)
 		exit 1
