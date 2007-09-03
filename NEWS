@@ -1,7 +1,7 @@
 News
 ~~~~
 
-  * Development:
+  * Version 0.6.0 (2007-09-03):
 
     * Handle CR-LF newline endings when parsing the headers.
 
