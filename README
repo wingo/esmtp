@@ -4,7 +4,7 @@
                                   José Fonseca
                                       ---
                                    March 2006
-                                     
+
 
 Introduction
 ~~~~~~~~~~~~
@@ -107,7 +107,7 @@ set envelope_from=yes
 --------------------------------------------------
 set sendmail="/path/to/esmtp -v -X /tmp/esmtp.log"
 --------------------------------------------------
-    
+
   This will enable verbose output and logging of the traffic with the SMTP
   server.
 
@@ -116,8 +116,8 @@ Interfacing to Mail Delivery Agents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   <<esmtp>> relies upon a Mail Delivery Agent (MDA) for local mail delivery, so
-  you need one if you want to avoid having another MTA for local delivery.  
-  
+  you need one if you want to avoid having another MTA for local delivery.
+
   Notice that at the moment <<esmtp>> does not honor mail aliases or
   <<<.forward>>> files.
 
@@ -151,7 +151,7 @@ mda='/usr/bin/formail -a "Date: `date -R`" | /usr/bin/procmail -d %T'
 | formail -a "Date: `date -R`"
 ------------------------------
 
-  
+
 Interfacing with other mail applications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -160,8 +160,8 @@ Interfacing with other mail applications
 ~~~~~~~~~~~
 
   By default <<fetchmail>> delivers messages via SMTP to port 25 on the machine
-  it is running.  Because <<esmtp>> has no SMTP server if you are not using another 
-  MTA for local delivery then you will need to configure <<fetchmail>> to use 
+  it is running.  Because <<esmtp>> has no SMTP server if you are not using another
+  MTA for local delivery then you will need to configure <<fetchmail>> to use
   <<esmtp>> executable.  This is accomplished by adding the following lines to the top
   of your <<<~/.fetchmailrc>>>:
 
@@ -218,13 +218,13 @@ Using the StartTLS extension
   TLS support in <<libESMTP>> although usable is not yet as robust and
   featureful as the rest of the library. At the moment to use the StartTLS
   extension you will need to:
-  
+
     [[1]] create a <<<~/.authenticate>>> directory for the certificates. All files
     and directories in <<<~/.authenticate>>> (including itself) must be user-readable
     only, i.e., they must have 0600 and 0700 permissions respectively.
 
     [[2]] put the certificate of the trusted Cert-Authority that signed the
-    server certificate into <<<~/.authenticate/ca.pem>>>. 
+    server certificate into <<<~/.authenticate/ca.pem>>>.
 
     [[3]] if a client certificate is required by the server then put it
     (including the private key) into
@@ -240,7 +240,7 @@ Using the StartTLS extension
 
   In case of failure no error message will appear. Instead, <<libESMTP>> will
   terminate the SMTP connection right after issuing the STARTLS command.
-  
+
   For more information about TLS support in <<libEMSTP>> see the comments in
   <<<smtp-tls.c>>> in the <<libESMTP>> source distribution.
 
@@ -249,7 +249,7 @@ Using the StartTLS extension
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Mozilla.org's browsers already ship with a bundle of CA root certificates. For most cases
-  this bundle should suffice. You can download the bundle a format suitable to esmtp from 
+  this bundle should suffice. You can download the bundle a format suitable to esmtp from
   {{http://curl.haxx.se/docs/caextract.html}}, as
 
 ---------------------------------------
@@ -277,8 +277,8 @@ chmod -R go-rwx ~/.authenticate/ca
 ---------------------------------------
 
 
-* Determining determining the Cert-Authority certificate
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Determining the Cert-Authority certificate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   It may happen that the mail server certificate is signed by an unknown or
   custom root certificate. If you think that may be your case you can try to
@@ -308,3 +308,45 @@ issuer=/C=ZA/ST=Western Cape/L=Cape Town/O=Thawte Consulting cc/OU=Certification
 
   See also {{http://curl.haxx.se/docs/sslcerts.html}}
 
+
+Queueing support for dial-in users
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  To enable mail queueing support for esmtp, a wrapper script has been included
+  with this distribution. It's goal is to be called instead of esmtp when a mail
+  client requests sending of an email, and then periodically or on request to
+  actually send pending emails.
+  First choose a place to save the script. This path will be referenced by <<DIR>>
+  in the following examples. Then you need to create symbolic links to it with
+  special names at one of the directories in your $PATH environment variable, e.g.
+  $HOME/bin:
+
+---------------
+cd $HOME/bin
+ln -s <<DIR>>/esmtp-wrapper sendmail
+ln -s <<DIR>>/esmtp-wrapper deliver
+ln -s <<DIR>>/esmtp-wrapper mailq
+---------------
+
+  When esmtp-wrapper is called either as sendmail or esmtp, it will first enqueue the
+  mail by saving the mail itself and the given parameters (like, e.g. the envelope-from
+  address) into a directory within the caller's $HOME/.esmtp_queue directory, and then
+  try to directly deliver the queue in background.
+  In difference to enqueueing, successful delivery is not treated as critical at this
+  point and therefore won't disturb the mail client's workflow.
+  To trigger delivery of all enqueued mails, execute esmtp-wrapper either as deliver,
+  or as mailq using '-q' as first parameter.
+  You can check whether there are enqueued mails either by simply issueing <<mailq>> or
+  manually checking your $HOME/.esmtp_queue directory.
+  Maybe the best way to trigger mail delivery is within some script which is called after
+  the internet connection has been enabled. Alternatively I find the following crontab entry
+  quite useful:
+
+---------------
+*/10 * * * * /bin/ping -c1 mail.example.com >/dev/null 2>&1 && $HOME/bin/deliver
+---------------
+
+  it will check every 10 minutes whether the mailserver mail.example.com is reachable and
+  on success deliver all mails in the queue.
+  BEWARE: always make sure the script is called by the right user, as esmtp-wrapper depends
+  on that.
