@@ -359,6 +359,9 @@ static int authinteract (auth_client_request_t request, char **result, int field
 			result[i] = identity->user;
 		else if (request[i].flags & AUTH_PASS && identity->pass)
 			result[i] = identity->pass;
+		else if (request[i].flags & AUTH_REALM)
+			/* Just supply an empty string for the domain */
+			result[i] = identity->user + strlen(identity->user);
 		else
 			return 0;
 	}
