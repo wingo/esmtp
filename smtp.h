@@ -53,6 +53,7 @@ typedef struct {
 	/*@{*/
 	char *force_reverse_path;
 	char *force_sender;
+	int prohibit_msgid;
 	/*@}*/
 } identity_t;
 

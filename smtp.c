@@ -650,6 +650,11 @@ void smtp_send(message_t *msg, identity_t *identity)
 			goto failure;
 	}
 
+	/* Prohibit Message-ID:-Header if force_msgid is not specified */
+	if(identity->prohibit_msgid)
+		if(!smtp_set_header_option(message, "Message-ID", Hdr_PROHIBIT, (int)1))
+			goto failure;
+
 	/* DSN options */
 	if(!smtp_dsn_set_ret(message, msg->ret))
 		goto failure;

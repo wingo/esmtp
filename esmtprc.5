@@ -92,6 +92,15 @@ be used as "From:" when the message contains none. "%u" will
 be replaced with the username. "%%" by "%".
 
 .TP
+\fBmessage_id\fR
+Whether to set the Message-ID field of the message before sending.
+Normally the receiving MTA sets the Message-ID if missing, so you can turn
+this off if your sending host does not have a fully qualified domain name.
+
+Allowed values are either \fBenabled\fR or \fBdisabled\fR. It defaults to
+\fBenabled\fR
+
+.TP
 \fBpreconnect\fR
 Shell command to execute prior to opening an SMTP connection.
 

@@ -67,6 +67,7 @@ helo		{ return HELO; }
 force		{ return FORCE; }
 reverse_path	{ return REVERSE_PATH; }
 sender		{ return SENDER; }
+message_id	{ return MSGID; }
 mda		{ return MDA; }
 
 =		{ return MAP; }
