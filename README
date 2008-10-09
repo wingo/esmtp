@@ -1,9 +1,9 @@
-                                     -----
-                                     ESMTP
-                                     -----
+				   ---------
+				   ESMTP MTA
+				   ---------
                                   José Fonseca
                                       ---
-                                   March 2006
+				  October 2008
 
 
 Introduction
@@ -14,7 +14,7 @@ Introduction
   AUTH (including the CRAM-MD5 and NTLM SASL mechanisms) and the StartTLS SMTP
   extensions.
 
-  See the {{{http://esmtp.sourceforge.net/}ESMTP home page}} for updated
+  See the {{{http://esmtp.sourceforge.net/}ESMTP MTA home page}} for updated
   information.
 
 
