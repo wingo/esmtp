@@ -1,6 +1,10 @@
 News
 ~~~~
 
+  * Development:
+
+    * Update mutt option name in the user manual (Wu Fengguang).
+
   * Version 1.0 (2008-10-09):
 
     * Fix NTLM authentication (Nils Rennebarth).

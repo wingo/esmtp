@@ -99,7 +99,7 @@ set sendmail="/path/to/esmtp"
   configuration file:
 
 ---------------------
-set envelope_from=yes
+set use_envelope_from=yes
 ---------------------
 
   For debugging purposes you may prefer to put in your <<<~/.muttrc>>>:
