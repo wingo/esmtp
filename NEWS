@@ -3,6 +3,8 @@ News
 
   * Development:
 
+    * Use locking in esmtp-wrapper (Phil Sutter).
+
     * Update mutt option name in the user manual (Wu Fengguang).
 
   * Version 1.0 (2008-10-09):
