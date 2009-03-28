@@ -17,8 +17,22 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 qdir="$HOME/.esmtp_queue"
+deliver_lock="$qdir/.deliver_lock"
 esmtp="/usr/bin/esmtp"
 mktemp="/bin/mktemp"
+dotlockfile="/usr/bin/dotlockfile"
+
+__do_check_program() { # (path to program)
+	[ -x "$1" ] || { \
+		echo "required program '$1' not found, exiting"
+		exit 1
+	}
+}
+check_programs() { # ()
+	__do_check_program "$esmtp"
+	__do_check_program "$mktemp"
+	__do_check_program "$dotlockfile"
+}
 
 queue_mail() { # ($@)
 	local ret=0
@@ -31,7 +45,7 @@ queue_mail() { # ($@)
 		echo "unable to create tempdir inside $qdir" 2>&1
 		return 1
 	}
-
+	touch "$mdir/lock"
 	echo "$@" >"$mdir/cmd" || ret=1
 	cat </dev/stdin >"$mdir/mail" || ret=1
 	[ $ret -eq 0 ] || {
@@ -40,6 +54,7 @@ queue_mail() { # ($@)
 	}
 
 	chmod 0600 $mdir/* || echo "warning setting secure permissions failed!" 2>&1
+	rm "$mdir/lock"
 	return 0
 }
 
@@ -47,17 +62,25 @@ show_mail() { # ($mdir)
 	echo "mail in dir $1:"
 	printf '\t%s' "`grep ^From: "$1/mail"`"
 	printf '\t%s' "`grep ^To: "$1/mail"`"
+	[ -f "$1/lock" ] && printf '\t%s' "[LOCKED]"
 	printf '\t%s\n' "`grep ^Date: "$1/mail"`"
 }
 
 show_queue() { # ()
 	local i=0
+	local lockwarn=0
 	for dir in $qdir/*; do
 		[ ! -d "$dir" ] && continue
+		[ -f "$dir/lock" ] && lockwarn=1
 		show_mail $dir
 		let i++
 	done
 	echo "$i mails to deliver"
+	[ $lockwarn -eq 0 ] || { \
+		printf '\n%s\n' "Warning: locked mails in queue!"; \
+		printf '%s' "This means that either enqueueing is in "; \
+		printf '%s\n' "progress, or it failed for some reason."; \
+	}
 }
 
 send_mail() { # ($mdir)
@@ -66,22 +89,36 @@ send_mail() { # ($mdir)
 	return $?
 }
 
-deliver_queue() { # ()
+deliver_queue() { # ([background])
 	local undelivered=0
+
+	# when delivering in background, there is time to wait
+	# for a potential burst run (git-send-email, e.g.) or
+	# exiting of other delivery jobs.
+	if [[ "$1" = "background" ]]; then
+		sleep 5
+	fi
+	if ! $dotlockfile -p -l "$deliver_lock"; then
+		return 1
+	fi
 	for dir in $qdir/*; do
 		[ ! -d "$dir" ] && continue
-		sleep 5 # allow tunnel to close properly
+		[ -f "$dir/lock" ] && continue
 		send_mail "$dir"
 		undelivered=`expr $undelivered + $?`
 	done
+	$dotlockfile -u "$deliver_lock"
 	return $undelivered
 }
 
 ME=`basename "$0"`
+
+check_programs	# possible program exit point
+
 case "$ME" in
 	sendmail|esmtp)
 		queue_mail "$@" || return 1
-		deliver_queue &
+		deliver_queue "background" &
 	;;
 	deliver)
 		deliver_queue
