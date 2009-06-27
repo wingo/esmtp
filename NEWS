@@ -3,6 +3,8 @@ News
 
   * Development:
 
+    * Option to force local only MDA (Robert A.M. Diamond).
+
     * Use locking in esmtp-wrapper (Phil Sutter).
 
     * Update mutt option name in the user manual (Wu Fengguang).

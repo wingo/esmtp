@@ -149,6 +149,21 @@ place an %F.
 Some common MDAs are "/usr/bin/procmail -d %T", "/usr/bin/deliver" and
 "/usr/lib/mail.local %T".
 
+.TP
+\fBforce_mda\fR
+Force mail to be delivered by the MDA.
+
+When set, any mail from anywhere to anywhere will instead be delivered to the
+value of force_mda. It will also only be delivered locally, via the mda. This
+will let you have a very minimal mail set-up, which can ONLY handle local mail.
+
+For example:
+
+.nf
+    mda = "procmail -d %T"
+    force_mda = "\fIsomeuser\fR"
+.fi
+
 .SH SEE ALSO
 esmtp(1)
 

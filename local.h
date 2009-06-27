@@ -12,6 +12,7 @@
 
 
 extern char *mda;
+extern char *force_mda;
 extern FILE *mda_fp;
 
 

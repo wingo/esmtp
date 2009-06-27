@@ -371,14 +371,17 @@ int main (int argc, char **argv)
 		exit (EX_USAGE);
 	}
 
+	/* Parse the rc file.
+	 *
+	 * Do this before message_add_recipient; to enable the force_mda recipient
+	 */
+	rcfile_parse(rcfile);
+
 	/* Add remaining program arguments as message recipients. */
 	while (optind < argc)
 		message_add_recipient(message, argv[optind++]);
 
 	identities_init();
-
-	/* Parse the rc file. */
-	rcfile_parse(rcfile);
 
 	drop_sgids();
 

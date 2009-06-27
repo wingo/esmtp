@@ -17,13 +17,26 @@
 
 
 char *mda = NULL;
+char *force_mda = NULL;
 
 FILE *mda_fp = NULL;
 
 
 int local_address(const char *address)
 {
-	return !strchr(address, '@');
+	if (!force_mda)
+	{
+		/* TODO:
+		 *
+		 * A litle more searching
+		 * Does the regex"[^@]*\@(.*)" resolve to 127.0.0.1 or a local ip?
+		 *
+		 * Maybe it should be delivered locally?
+		 */
+		return !strchr(address, '@');
+	}
+
+	return 1;
 }
 
 /** replace ' by _ */
@@ -58,40 +71,54 @@ void local_init(message_t *message)
 	/* get user addresses for %T */
 	if (strstr(before, "%T"))
 	{
-		struct list_head *ptr;
-		char *p;
-
-		/*
-		 * We go through this in order to be able to handle very
-		 * long lists of users and (re)implement %s.
-		 */
-		nameslen = 0;
-		list_for_each(ptr, &message->local_recipients)
+		if (!force_mda)
 		{
-			recipient_t *recipient = list_entry(ptr, recipient_t, list);
-			
-			assert(recipient->address);
-			
-			nameslen += (strlen(recipient->address) + 3);	/* string + quotes + ' ' */
-		}
+			struct list_head *ptr;
+			char *p;
+	
+			/*
+			 * We go through this in order to be able to handle very
+			 * long lists of users and (re)implement %s.
+			 */
+			nameslen = 0;
+			list_for_each(ptr, &message->local_recipients)
+			{
+				recipient_t *recipient = list_entry(ptr, recipient_t, list);
+				
+				assert(recipient->address);
+				
+				nameslen += (strlen(recipient->address) + 3);	/* string + quotes + ' ' */
+			}
+	
+			names = (char *)xmalloc(nameslen + 1);		/* account for '\0' */
+			p = names;
+			list_for_each(ptr, &message->local_recipients)
+			{
+				recipient_t *recipient = list_entry(ptr, recipient_t, list);
+				int written;
+				
+				sanitize(recipient->address);
+				written = sprintf(p, "'%s' ", recipient->address);
+				if (written < 0)
+				{
+					perror(NULL);
+					exit(EX_OSERR);
+				}
+				p += written;
+			}
+			names[--nameslen] = '\0';		/* chop trailing space */
+		} else {
+			nameslen = (strlen(force_mda) + 3);	// 'force_mda'
+			names = (char *)xmalloc(nameslen + 1);	// 'force_mda'\0
 
-		names = (char *)xmalloc(nameslen + 1);		/* account for '\0' */
-		p = names;
-		list_for_each(ptr, &message->local_recipients)
-		{
-			recipient_t *recipient = list_entry(ptr, recipient_t, list);
-			int written;
-			
-			sanitize(recipient->address);
-			written = sprintf(p, "'%s' ", recipient->address);
-			if (written < 0)
+			// Let's skip sanitization?
+			// Hope the config isn't evil to us 0.o
+			if (sprintf(names, "'%s' ", force_mda) < 0)
 			{
 				perror(NULL);
 				exit(EX_OSERR);
 			}
-			p += written;
 		}
-		names[--nameslen] = '\0';		/* chop trailing space */
 	}
 
 	/* get From address for %F */
@@ -216,4 +243,7 @@ void local_cleanup(void)
 
 	if(mda)
 		free(mda);
+
+	if(force_mda)
+		free(force_mda);
 }
