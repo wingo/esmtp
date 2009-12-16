@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.53)
-AC_INIT(esmtp, 1.0)
+AC_INIT(esmtp, 1.1)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE(1.9 dist-bzip2)
@@ -39,8 +39,6 @@ else
 	AC_MSG_RESULT(no)
 	AC_MSG_ERROR(libESMTP library not found)
 fi
-
-AC_SUBST( sysconfdir )
 
 jrf_FUNC_GETOPT
 
