@@ -20,6 +20,8 @@ esmtp_SOURCES = \
 	smtp.h \
 	xmalloc.h
 
+BUILT_SOURCES = parser.h
+
 EXTRA_DIST = \
 	sample.esmtprc \
 	esmtp-wrapper
