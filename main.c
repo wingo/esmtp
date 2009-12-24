@@ -334,11 +334,6 @@ int main (int argc, char **argv)
 
 			case 't':
 				/* Read recipients from message */
-				if(!message_parse_headers(message))
-				{
-					fprintf(stderr, "No recipients found\n");
-					exit(EX_DATAERR);
-				}
 				parse_headers = 1;
 				break;
 
@@ -376,6 +371,16 @@ int main (int argc, char **argv)
 	 * Do this before message_add_recipient; to enable the force_mda recipient
 	 */
 	rcfile_parse(rcfile);
+
+	/* Read recipients from message */
+	if (parse_headers)
+	{
+		if (!message_parse_headers(message))
+		{
+			fprintf(stderr, "No recipients found\n");
+			exit(EX_DATAERR);
+		}
+	}
 
 	/* Add remaining program arguments as message recipients. */
 	while (optind < argc)
