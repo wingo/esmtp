@@ -1,6 +1,11 @@
 News
 ~~~~
 
+  * Version 1.2 (2009-12-24):
+
+    * Make force_mda in the esmtprc to work with the -t option (based on patch
+    by Sourav K. Mandal)
+
   * Version 1.1 (2009-12-16):
 
     * Option to force local only MDA (Robert A.M. Diamond).

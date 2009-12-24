@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.65)
-AC_INIT(esmtp, 1.1)
+AC_INIT(esmtp, 1.2)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE(1.11 dist-bzip2)
