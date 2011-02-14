@@ -197,19 +197,8 @@ identity username@gmail.com
   Since Gmail requires the use of the StartTLS extension, you'll need to add
   the Cert-Authority (CA) root certificate which signed Gmail server certificate.
 
-  Gmail's server certificated is signed by Thawte. You can either follow the
-  instructions to use Mozilla's CA cert bundle, found elsewhere in this
-  document, or download directly the
-  {{{http://www.thawte.com/roots/index.html}Thawte Premium Server CA
-  certificate}}, as shown below:
-
----------------------------------------
-mkdir ~/.authenticate
-chmod 0700 ~/.authenticate
-wget https://www.verisign.com/support/thawte-roots.zip
-unzip -p thawte-roots.zip 'Thawte Server Roots/ThawtePremiumServerCA_b64.txt' > ~/.authenticate/ca.pem
-chmod 0600 ~/.authenticate/ca.pem
----------------------------------------
+  You can follow the instructions to use Mozilla's CA cert bundle, found
+  elsewhere in this document.
 
 
 Using the StartTLS extension
