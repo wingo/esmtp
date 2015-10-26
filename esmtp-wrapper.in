@@ -18,9 +18,9 @@
 
 qdir="$HOME/.esmtp_queue"
 deliver_lock="$qdir/.deliver_lock"
-esmtp="/usr/bin/esmtp"
-mktemp="/bin/mktemp"
-dotlockfile="/usr/bin/dotlockfile"
+esmtp="@exec_prefix@/esmtp"
+mktemp="@MKTEMP@"
+dotlockfile="@DOTLOCKFILE@"
 
 __do_check_program() { # (path to program)
 	[ -x "$1" ] || { \

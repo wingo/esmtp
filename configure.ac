@@ -18,6 +18,9 @@ AC_PROG_LEX
 AC_PROG_LN_S
 AC_PROG_YACC
 
+AC_PATH_PROG([DOTLOCKFILE], [dotlockfile], [dotlockfile])
+AC_PATH_PROG([MKTEMP], [mktemp], [mktemp])
+
 dnl Check for libESMTP
 AC_ARG_WITH(libesmtp,
 	    AC_HELP_STRING([--with-libesmtp=DIR],
@@ -44,5 +47,6 @@ jrf_FUNC_GETOPT
 
 AC_CHECK_FUNCS([getuid geteuid])
 		
+AC_CONFIG_FILES([esmtp-wrapper],[chmod +x esmtp-wrapper])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
