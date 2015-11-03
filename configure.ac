@@ -18,7 +18,6 @@ AC_PROG_LEX
 AC_PROG_LN_S
 AC_PROG_YACC
 
-AC_PATH_PROG([DOTLOCKFILE], [dotlockfile], [dotlockfile])
 AC_PATH_PROG([MKTEMP], [mktemp], [mktemp])
 
 ESMTP_OR_ESMTP_WRAPPER=esmtp

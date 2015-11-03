@@ -17,11 +17,9 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 qdir="$HOME/.esmtp_queue"
-deliver_lock="$qdir/.deliver_lock"
 prefix="@prefix@"
 esmtp="@exec_prefix@/esmtp"
 mktemp="@MKTEMP@"
-dotlockfile="@DOTLOCKFILE@"
 
 __do_check_program() { # (path to program)
 	[ -x "$1" ] || { \
@@ -32,7 +30,6 @@ __do_check_program() { # (path to program)
 check_programs() { # ()
 	__do_check_program "$esmtp"
 	__do_check_program "$mktemp"
-	__do_check_program "$dotlockfile"
 }
 
 queue_mail() { # ($@)
@@ -99,16 +96,12 @@ deliver_queue() { # ([background])
 	if [[ "$1" = "background" ]]; then
 		sleep 5
 	fi
-	if ! $dotlockfile -p -l "$deliver_lock"; then
-		return 1
-	fi
 	for dir in $qdir/*; do
 		[ ! -d "$dir" ] && continue
 		[ -f "$dir/lock" ] && continue
 		send_mail "$dir"
 		undelivered=`expr $undelivered + $?`
 	done
-	$dotlockfile -u "$deliver_lock"
 	return $undelivered
 }
 
