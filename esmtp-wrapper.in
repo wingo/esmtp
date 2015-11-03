@@ -18,7 +18,7 @@
 
 qdir="$HOME/.esmtp_queue"
 prefix="@prefix@"
-esmtp="@exec_prefix@/esmtp"
+esmtp="@exec_prefix@/bin/esmtp"
 mktemp="@MKTEMP@"
 
 __do_check_program() { # (path to program)
