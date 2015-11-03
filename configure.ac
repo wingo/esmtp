@@ -29,7 +29,7 @@ if test "$enable_esmtp_wrapper" = yes; then
    ESMTP_OR_ESMTP_WRAPPER=esmtp-wrapper
 fi
 
-AC_SUBST(ESMTP_WRAPPER)
+AC_SUBST(ESMTP_OR_ESMTP_WRAPPER)
 
 dnl Check for libESMTP
 AC_ARG_WITH(libesmtp,
