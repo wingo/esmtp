@@ -20,17 +20,6 @@ AC_PROG_YACC
 
 AC_PATH_PROG([MKTEMP], [mktemp], [mktemp])
 
-ESMTP_OR_ESMTP_WRAPPER=esmtp
-
-AC_ARG_ENABLE(esmtp-wrapper,
-              AS_HELP_STRING([--enable-esmtp-wrapper],
-                             [enable queueing via esmtp-wrapper script]))
-if test "$enable_esmtp_wrapper" = yes; then
-   ESMTP_OR_ESMTP_WRAPPER=esmtp-wrapper
-fi
-
-AC_SUBST(ESMTP_OR_ESMTP_WRAPPER)
-
 dnl Check for libESMTP
 AC_ARG_WITH(libesmtp,
 	    AC_HELP_STRING([--with-libesmtp=DIR],
