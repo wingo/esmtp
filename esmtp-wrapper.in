@@ -18,6 +18,7 @@
 
 qdir="$HOME/.esmtp_queue"
 deliver_lock="$qdir/.deliver_lock"
+prefix="@prefix@"
 esmtp="@exec_prefix@/esmtp"
 mktemp="@MKTEMP@"
 dotlockfile="@DOTLOCKFILE@"
