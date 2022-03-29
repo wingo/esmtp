@@ -43,6 +43,20 @@ type "localhost:smtp" or "localhost:25" where the application
 expects a host name.
 
 .TP
+\fBsender\fR
+Set the identity of the sender of the email.
+
+This is useful for systems behind a NAT firewall, when for example
+the sender's email address should not have the hostname.  Several
+escape formatting codes are available:
+
+   %u - user name of the sender
+   %h - hostname of the sending system
+   %d - domainname of the sending system
+
+So %u@%d might be a desirable identity from inside the local network.
+
+.TP
 \fBusername\fR
 Set the username for authentication with the SMTP server.
 

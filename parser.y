@@ -104,6 +104,7 @@ statement_list	: statement
 
 /* future global options should also have the form SET <name> optmap <value> */
 statement	: HOSTNAME map STRING	{ identity->host = xstrdup($3); SET_DEFAULT_IDENTITY; }
+                | SENDER map STRING     { identity->address = xstrdup($3); }
 		| USERNAME map STRING	{ identity->user = xstrdup($3); SET_DEFAULT_IDENTITY; }
 		| PASSWORD map STRING	{ identity->pass = xstrdup($3); SET_DEFAULT_IDENTITY; }
 		| STARTTLS map DISABLED	{ identity->starttls = Starttls_DISABLED; SET_DEFAULT_IDENTITY; }
