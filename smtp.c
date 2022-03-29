@@ -485,6 +485,67 @@ static char *escape_forced_address (char *mask)
 	
 }
 
+/* search for end of string */
+static inline char *eos(char *p)
+  {
+  while (*p) p++;
+  return p;
+  }
+
+/* substitute %codes in a string,
+     %u = get_username()
+     %h = gethostname()
+     %d = domainname (omit host. in host.domain.name from gethostname)
+   return the result in a newly malloced string
+*/
+char *xstrsubst(char *pp,char *p)
+  {
+  char address[2048],*dp=address;
+  while (p)
+    {
+    strcpy(dp,pp);
+    dp += (p - pp);
+    switch (p[1])
+      {
+      case 'u':;
+        strcpy(dp,get_username());
+        dp = eos(dp);
+        p += 2;
+        break;
+              
+      case 'h':;
+        if(! gethostname(dp,sizeof(address)-(dp-address)))
+          dp = eos(dp);
+        p += 2;
+        break;
+              
+      case 'd':
+        if(! gethostname(dp,sizeof(address)-(dp-address)))
+          {
+          char *pt = strchr(dp,'.');
+          if (pt++)
+            {
+            do { *dp++ = *pt++; } while (*pt);
+            }
+          else
+            dp = eos(dp);
+          }
+              
+        p += 2;
+        break;
+              
+      default:
+        fprintf(stderr,"unknown formatter in sender %s\n",p);
+        return 0;
+      }
+    pp = p;
+    p = strchr(pp,'%');
+    }
+  
+  strcpy(dp,pp);
+  return xstrdup(address);
+  }
+
 void smtp_send(message_t *msg, identity_t *identity)
 {
 	smtp_session_t session;
@@ -597,9 +658,17 @@ void smtp_send(message_t *msg, identity_t *identity)
 	}
 	else if(identity->address)
 	{
-		/* Use the identity address as reverse path. */
-		if(!smtp_set_reverse_path (message, identity->address))
-			goto failure;
+                char *p=strchr(identity->address,'%');
+                if (p)
+                { /* expand %codes in address */
+                        char *av = xstrsubst(identity->address,p);
+                        if (! av) goto failure;
+                        free(identity->address);
+                        identity->address = av;
+                }
+                /* Use the identity address as reverse path. */
+                if(!smtp_set_reverse_path (message, identity->address))
+                        goto failure;
 	}
 	else
 	{
